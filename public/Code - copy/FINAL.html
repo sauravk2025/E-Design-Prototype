@@ -1,0 +1,140 @@
+<div class="toolbar">
+  <div class="rails-picker">
+    <label>Rails:</label>
+    <select
+      [value]="railsCount()"
+      (change)="setRailsCount(+$any($event.target).value)"
+      [disabled]="locked()"
+      title="{{ locked() ? 'Unlock to change rail count' : 'Change rail count' }}"
+    >
+      <option *ngFor="let n of [1,2,3,4,5]" [value]="n">{{n}}</option>
+    </select>
+  </div>
+
+  <button (click)="finalizeLayout()" [disabled]="locked()">Finalize Layout</button>
+  <button (click)="unfinalizeLayout()" [disabled]="!locked()">Unlock Layout</button>
+
+  <button (click)="exportAsPdf()">Export as PDF</button>
+</div>
+
+<div class="wrap">
+  <!-- Toolbox (unchanged except for your earlier scroll tweak, keep it) -->
+  <div class="toolbox" [class.disabled]="locked()">
+    <div class="tool-title">Components</div>
+    <div class="toolbox-body">
+      <div
+        class="tool"
+        *ngFor="let t of toolbox"
+        (mousedown)="onStartDragToolbox(t, $event)"
+        [style.--w.px]="t.w"
+        [style.--h.px]="t.h"
+        [style.width.px]="t.w"
+        [style.height.px]="t.h"
+        [title]="t.label + ' ('+t.w+'×'+t.h+')'"
+      >
+        <div class="tool-icon">{{ t.label }}</div>
+        <div class="tool-meta">{{ t.w }}×{{ t.h }}</div>
+      </div>
+    </div>
+    <div class="hint" *ngIf="!locked()">Drag a component into a rail →</div>
+    <div class="hint" *ngIf="locked()">Locked: connections only</div>
+  </div>
+
+  <!-- Panel -->
+  <div #panelRef class="panel" [ngStyle]="panelStyle()" (mousedown)="onPanelClick()">
+    <div class="grid"></div>
+
+
+
+
+    <svg class="wires"
+     [attr.width]="'100%'"
+     [attr.height]="panelHeight()"
+     [style.pointer-events]="locked() ? 'none' : 'auto'">
+  <ng-container *ngFor="let c of visibleConnections()">
+    <polyline
+      [attr.points]="getPolylinePoints(c)"
+      [attr.stroke]="c.color"
+      fill="none"
+      stroke-width="3"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      [attr.pointer-events]="'visibleStroke'"
+      (dblclick)="onDeleteConnection(c.id, $event)"
+      (click)="onSelectConnection(c, $event)"
+      (mousedown)="onWireMouseDown(c, $event)"
+    />
+  </ng-container>
+</svg>
+
+
+
+    
+    <!-- Rails (0-height lines) -->
+    <div
+      class="rail"
+      *ngFor="let r of railsTop(); index as i"
+      [ngStyle]="railStyle(i)"
+      [class.highlight]="hoverRailIndex() === i && isDragging()"
+    >
+      <div class="rail-title">Rail {{ i + 1 }}</div>
+
+      <!-- Drop preview (if you kept it) -->
+      <div
+        class="drop-preview"
+        *ngIf="preview() && preview()!.railIndex === i"
+        [style.left.px]="preview()!.x"
+        [style.top.px]="-preview()!.h/2"
+        [style.width.px]="preview()!.w"
+        [style.height.px]="preview()!.h"
+      ></div>
+
+      <!-- Parts on this rail -->
+      <ng-container *ngFor="let p of parts()">
+        <div
+          *ngIf="p.railIndex === i"
+          class="part"
+          [class.locked]="locked()"
+          [class.dragging]="draggingPartId() === p.id && isDragging()"
+          [style.left.px]="p.x"
+          [style.top.px]="-p.h/2"  
+          [style.width.px]="p.w"
+          [style.height.px]="p.h"
+          (mousedown)="onPartMouseDown($event, p.id)"
+          (dblclick)="onDeletePart(p.id, $event)"
+        >
+          <div class="part-label">{{ p.label }}</div>
+
+          <!-- Connectors (visible only when locked) -->
+          <button
+            *ngIf="showConnectors()"
+            class="connector"
+            [ngStyle]="connectorStyle(p, 'top')"
+            (mousedown)="$event.stopPropagation()"
+            (click)="onClickConnector(p.id, 'top')"
+            title="Top connector"
+          ></button>
+
+          <button
+            *ngIf="showConnectors()"
+            class="connector"
+            [ngStyle]="connectorStyle(p, 'bottom')"
+            (mousedown)="$event.stopPropagation()"
+            (click)="onClickConnector(p.id, 'bottom')"
+            title="Bottom connector"
+          ></button>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+

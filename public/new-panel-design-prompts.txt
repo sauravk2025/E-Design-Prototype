@@ -1,0 +1,81 @@
+I want to create an angular app to create a panel. The Panel can have at-most 5 rails and can have many components that can be placed on each rail. The rails should be stacked below each other one by one . There should be an option to change the number of rails. Height between each rail is 250px and width of each rail is 640px . I have another section which has the different components that could be dragged and dropped only on the rail. The components can be placed in any rail and anywhere in the rail. I should be able to move the components between rails too. Each component has specific width and height and can have two connection points at the top and bottom . Each component can be dragged and dropped in any rail. The components placed in a rail should never overlap with other components. That is the components can never be placed on top of each other. From each component's connection point I should be able to draw lines to the connection point of other component. There can be multiple lines from the same connection point where each line should be clearly demarcated with different color. But all this should be done as two steps. In the step 1, The user should be able to drag and drop the components to the rail and once the user finished the setting and organising the layout of the panel he clicks a button which asks the user if the design is final and once the user clicked yes then the connections points become visible for the user and no more drag and drop should be possible. Before clicking this button , the user should only see the component and not with its connection point. If the user clicked no , the user should still be able to adjust the layout and drag and drop the components. Once the design is finalised , the user can click on two connection point , that is one source and one destination and after the two connection point is decided it automatically draws a line between the two. There should never be self connection
+
+
+The current code works but there are a few correction.
+The Rails should be in middle of the container and there should be a margin-top of 200px for each rail and the last rail should have margin-bottom of 250px as well. The rail should pass through the center of each component . Currently the either bottom or top of the component touches the rail. And also the connection points are quite far away from the component. Each component gets two connection point top and bottom and should be placed at the center of the component.
+
+
+The current code works but there are a few correction.
+Remove the add sample features and button
+The drag and drop works fine at the moment
+These are the panel components and railcount should be initially 1
+railsCount = signal<number>(1);
+  locked = signal<boolean>(false);
+
+  toolbox: PartType[] = [
+    { type: 'SP', label: 'SP', w: 80, h: 80 },
+    { type: 'MCB_1P', label: 'MCB 1P', w: 90, h: 90 },
+    { type: 'MCB_2P', label: 'MCB 2P', w: 100, h: 100 },
+    { type: 'MCB_3P', label: 'MCB_3P', w: 110, h: 110 },
+    
+    { type: 'CN-10A', label: 'CN-10A', w: 100, h: 90 },
+    { type: 'C3N-16A', label: 'C3N-16A', w: 130, h: 120 },
+    { type: 'C3N-13A', label: 'C3N-13A', w: 130, h: 120 },
+
+    { type: 'RCD', label: 'RCD', w: 130, h: 120 },
+  ];
+
+
+Make the drag and drop more visually appealing to the user by changing the cursor when I am dragging a component to the rail and also make the entire thing more visually appealing to the user. Design the page more beautifully
+
+
+The current code works but I want to make a few changes
+The lines drawn between two component should never go through any other components. Whenever it sees a component on its path, it should take a turn left or right maintaining the angle of 90 or 180 degree.
+The line should always have an angle of 90 degrees or 180 degrees.
+The lines whenever starting from a connection point should be drawn initially a small distance up or down and only then take a turn left or right accordingly such that top and bottom connection is clearly demarcated.
+The line should always take the shortest path to reach from source to destination satisfying the above mentioned conditions. It can take a path outside the rail. By that I mean it can take a path through the side of the rail.
+
+
+The current code works perfect
+But there is only a small change required to this code. The line should always have an angle of 90 degrees or 180 degrees.The lines whenever starting from a connection point should be drawn initially a small distance up or down at an angle of 90 or 180 degree and only then take a turn left or right at an angle of 90 or 180 degree accordingly such that top and bottom connection is clearly demarcated.
+
+
+The current code works perfectly alright
+But there are few changes in drawing the line
+When I connect between components, the lines should not pass through the rail. The line should always pass through outside the rail through the sides and must be the shortest path and then connect the connection points of the components. But If the components are exactly on top of each other then they can be directly connected without going through the sides from the top connection point of bottom component to the bottom connection of top component. If the connection is between top connection of top component to the bottom connection of bottom component then I have to go through the sides of the rail and should be the shortest path
+
+
+
+The current cods works perfectly alright. But I need one more change. Here since there are multiple connections from a port I cannot differentiate between the connections when wires overlap. For example if component A is connected to B to bottom port of B and also component C is connected to B to bottom port of B then both wires overlap and I cannot differentiate between the connections. I can only see a line of single color getting connected to B as I cannot clearly understand if A is connected to B. So in such cases there should be a small gap between different colored wires being connected to the same port from any source component and from any port of the source
+
+
+
+The current code works perfectly alright 
+But I need a single change
+When I connect the leftmost component to the components in a different rail the connection should pass through the left side of the rail.
+When I connect the rightmost component to the components in a different rail the connection should pass through the right side of the rail since it is more neater and easy to understand even though it is not the shortest path
+
+
+The code works perfectly great, but I want to avoid the small tangles made at the starting of the connection ports as shown in the figure
+
+
+The current code works perfectly alright 
+But I need a single change for the current code
+When I connect from a source to multiple components the lines originating from the source can overlap. But when a different source is connected to another set of components , the lines from these sources should never overlap. That is the lines originating from different sources should never overlap with other lines from another sources
+
+
+
+The current code is perfect but I need a small change . The lines drawn can cross other lines, but it should not cross the rails or the components. The lines should never overlap with each other unless they are from same connection point of the single source. In all the other cases line should never overlap in its path from source to destination. This could be solved by adding a small gap between lines. Currently the overlap happens during its path as given in the figure
+For example if the rails have two RCD's, they are not considered as same source. The lines from top connection point of 1st RCD can overlap even if they go to multiple destination point but the lines from 2nd RCD should never overlap with the lines of 1st RCD or any other sources or with the lines originating from bottom connection of 2nd RCD itself but they can cross each other. So add a gap between lines of 1stRCD and 2nd RCD or between lines origination from different connection point of same source. RCD here is an example. This condition applies for all the components.
+
+
+The current code works perfect but there are few more correction
+Try to give neat and appealing lines when passing outside the rails, that is try to avoid folds in lines as much as possible.
+Try to avoid overlapping between lines during its path from source to destination but they can cross each other.
+Lines from same source's same connection point can overlap. But in all the other cases line should never overlap
+Try to avoid folds between lines when they start from same source's same connection point.
+When implementing these features do not forget that lines should always be 90 or 180 degree and lines do not pass under the component or through the rail which is perfectly implemented in the current code
+
+
+The current code works perfectly fine but 
+Try to avoid folds in the around the area of the  rails. It need not be shortest path as this leads to overlap and not produce a clean diagram
