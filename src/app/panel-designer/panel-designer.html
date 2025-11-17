@@ -80,7 +80,7 @@
       [ngStyle]="railStyle(i)"
       [class.highlight]="hoverRailIndex() === i && isDragging()"
     >
-        <div class="rail-title">Rail {{ i + 1 }}</div>
+          <div class="rail-title">Rail {{ i + 1 }}</div>
 
         <!-- Drop preview (if you kept it) -->
           <div
@@ -106,28 +106,28 @@
                 (mousedown)="onPartMouseDown($event, p.id)"
                 (dblclick)="onDeletePart(p.id, $event)"
               >
-              <div class="part-label">{{ p.label }}</div>
+                <div class="part-label">{{ p.label }}</div>
 
-              <!-- Connectors (visible only when locked) -->
-              <button
-                *ngIf="showConnectors()"
-                class="connector"
-                [ngStyle]="connectorStyle(p, 'top')"
-                (mousedown)="$event.stopPropagation()"
-                (click)="onClickConnector(p.id, 'top')"
-                title="Top connector"
-              ></button>
+                <!-- Connectors (visible only when locked) -->
+                <button
+                  *ngIf="showConnectors()"
+                  class="connector"
+                  [ngStyle]="connectorStyle(p, 'top')"
+                  (mousedown)="$event.stopPropagation()"
+                  (click)="onClickConnector(p.id, 'top')"
+                  title="Top connector"
+                ></button>
 
-              <button
-                *ngIf="showConnectors()"
-                class="connector"
-                [ngStyle]="connectorStyle(p, 'bottom')"
-                (mousedown)="$event.stopPropagation()"
-                (click)="onClickConnector(p.id, 'bottom')"
-                title="Bottom connector"
-              ></button>
-          </div>
-      </ng-container>
+                <button
+                  *ngIf="showConnectors()"
+                  class="connector"
+                  [ngStyle]="connectorStyle(p, 'bottom')"
+                  (mousedown)="$event.stopPropagation()"
+                  (click)="onClickConnector(p.id, 'bottom')"
+                  title="Bottom connector"
+                ></button>
+            </div>
+          </ng-container>
     
     
     </div>

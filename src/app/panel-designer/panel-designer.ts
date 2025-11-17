@@ -103,7 +103,8 @@ export class PanelDesignerComponent implements AfterViewInit {
   readonly WIRE_STROKE = 3;    // stroke width for polyline (same as SVG stroke-width).
   
   private readonly SOURCE_GAP = 12; //This is the horizontal spacing between wires that start from different connectors on the SAME component.
-  
+  private usedColors = new Set<string>();  // all colors ever used for any wire
+
   private WIRE_BLOCK_THICK = 8; //Thickness of wire rectangle used to block routing area around an existing wire.
   
   private pathCache = new Map<string, Pt[]>();   // pathCache stores the auto-routed polyline points (Pt[]) for each connection, indexed by the connection ID.
@@ -149,7 +150,7 @@ export class PanelDesignerComponent implements AfterViewInit {
   '#c95e89ff', // magenta / pinkish
   '#865bebff', // indigo
   '#00796B', // teal (not close to green)
-  '#5D4037', // dark brown
+  '#a77b6dff', // dark brown
   '#000000'  // black
 ];
 
@@ -1238,39 +1239,76 @@ private portKey(partId: string, port: Port) {
 }
 
 //assign color to wires
+// private getOrAssignColor(partId: string, port: Port): string {
+//   const key = this.portKey(partId, port);
+//   const existing = this.portColors.get(key);
+//   if (existing) return existing;
+
+//   // Avoid colors already used by any other port, and avoid sibling port color
+//   const used = new Set(this.portColors.values());
+//   const sibling = this.portColors.get(this.portKey(partId, port === 'top' ? 'bottom' : 'top'));
+
+//   let chosen: string | null = null;
+//   // try a full pass over the palette starting at colorIndex
+//   for (let i = 0; i < this.colorCycle.length * 2; i++) {
+//     const idx = (this.colorIndex + i) % this.colorCycle.length;
+//     const c = this.colorCycle[idx];
+//     if (!used.has(c) && c !== sibling) {
+//       chosen = c;
+//       this.colorIndex = idx + 1; // advance index only when we pick
+//       break;
+//     }
+//   }
+//   // Fallback: still avoid sibling if possible
+//   if (!chosen) {
+//     for (let i = 0; i < this.colorCycle.length; i++) {
+//       const c = this.colorCycle[i];
+//       if (c !== sibling) { chosen = c; this.colorIndex = i + 1; break; }
+//     }
+//   }
+//   // Last resort: just pick next (palette exhausted)
+//   if (!chosen) {
+//     chosen = this.colorCycle[this.colorIndex % this.colorCycle.length];
+//     this.colorIndex++;
+//   }
+
+//   this.portColors.set(key, chosen);
+//   return chosen;
+// }
 private getOrAssignColor(partId: string, port: Port): string {
   const key = this.portKey(partId, port);
   const existing = this.portColors.get(key);
   if (existing) return existing;
 
-  // Avoid colors already used by any other port, and avoid sibling port color
-  const used = new Set(this.portColors.values());
-  const sibling = this.portColors.get(this.portKey(partId, port === 'top' ? 'bottom' : 'top'));
+  const siblingKey = this.portKey(partId, port === 'top' ? 'bottom' : 'top');
+  const sibling = this.portColors.get(siblingKey);
 
   let chosen: string | null = null;
-  // try a full pass over the palette starting at colorIndex
-  for (let i = 0; i < this.colorCycle.length * 2; i++) {
+
+  // 1) Try to pick a color from the fixed palette that:
+  //    - has NEVER been used before globally
+  //    - is not the same as the sibling port color
+  for (let i = 0; i < this.colorCycle.length; i++) {
     const idx = (this.colorIndex + i) % this.colorCycle.length;
     const c = this.colorCycle[idx];
-    if (!used.has(c) && c !== sibling) {
+
+    if (!this.usedColors.has(c) && c !== sibling) {
       chosen = c;
-      this.colorIndex = idx + 1; // advance index only when we pick
+      this.colorIndex = idx + 1;   // advance pointer
       break;
     }
   }
-  // Fallback: still avoid sibling if possible
+
+  // 2) If palette is exhausted, generate new unique colors on the fly
   if (!chosen) {
-    for (let i = 0; i < this.colorCycle.length; i++) {
-      const c = this.colorCycle[i];
-      if (c !== sibling) { chosen = c; this.colorIndex = i + 1; break; }
-    }
-  }
-  // Last resort: just pick next (palette exhausted)
-  if (!chosen) {
-    chosen = this.colorCycle[this.colorIndex % this.colorCycle.length];
+    // Use golden-angle trick for nice distribution of hues
+    const hue = (this.colorIndex * 137) % 360;
+    chosen = `hsl(${hue}, 85%, 40%)`;
     this.colorIndex++;
   }
 
+  // Mark this color as permanently used and bind it to this port
+  this.usedColors.add(chosen);
   this.portColors.set(key, chosen);
   return chosen;
 }
