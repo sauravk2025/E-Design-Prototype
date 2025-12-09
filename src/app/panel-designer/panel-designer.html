@@ -1,60 +1,67 @@
-<div class="toolbar">
-  
-  <div class="rails-picker">
-    <label>Rails:</label>
-    <select
-      [value]="railsCount()"
-      (change)="setRailsCount(+$any($event.target).value)"
-      [disabled]="locked()"
-      title="{{ locked() ? 'Unlock to change rail count' : 'Change rail count' }}"
-    >
-      <option *ngFor="let n of [1,2,3,4,5]" [value]="n">{{n}}</option>
-    </select>
-  </div>
 
-  <button (click)="finalizeLayout()" [disabled]="locked()">Finalize Layout</button>
-  <button (click)="unfinalizeLayout()" [disabled]="!locked()">Unlock Layout</button>
-  <button (click)="exportAsPdf()">Export as PDF</button>
-
-</div>
+<app-header></app-header>
 
 
 <div class="wrap">
-  <!-- Toolbox (unchanged except for your earlier scroll tweak, keep it) -->
-  <div class="toolbox" [class.disabled]="locked()">
-    <div class="tool-title">Components</div>
-    <div class="hint" *ngIf="!locked()">Drag a component into a rail →</div>
-    <div class="toolbox-body">
-      
-      <div
-        class="tool"
-        *ngFor="let t of toolbox"
-        (mousedown)="onStartDragToolbox(t, $event)"
-        [style.--w.px]="t.w"
-        [style.--h.px]="t.h"
-        [style.width.px]="t.w"
-        [style.height.px]="t.h"
-        [title]="t.label + ' ('+t.w+'×'+t.h+')'"
-      >
-        <div class="tool-icon">{{ t.label }}</div>
-        <div class="tool-meta">{{ t.w }}×{{ t.h }}</div>
-      </div>
-
+<!--Side Bar-->
+<!-- <app-component-library></app-component-library> -->
+  <div class="toolbox no-select" [class.disabled]="locked()">
+    
+    <div class="tool-title">
+      <pre>Component  Library</pre>
     </div>
+
+    <div class="hint" *ngIf="!locked()"><p>Drag a component into a rail</p></div>
+    <div class="hint" *ngIf="locked()"><p>Locked: connections only</p></div>
+    
+    <div class="toolbox-body">
+      <div class="tool-container" *ngFor="let t of toolbox" (mousedown)="onStartDragToolbox(t, $event)">
+        <div
+          class="tool"
+          (mousedown)="onStartDragToolbox(t, $event)"
+          [style.--w.px]="t.w"
+          [style.--h.px]="t.h"
+          [title]="t.label + ' '+ t.volt + ' ('+t.w+'x'+t.h+')'">
+          <img [src]="t.imagePath" style="max-height:80px">
+            <!-- <div class="tool-icon">{{ t.label }}</div>
+            <div class="tool-meta">{{ t.w }}×{{ t.h }}</div> -->
+          </div>
+
+          <div class="img-desc">
+            <div class="desc-container">
+              @if(t.volt){
+                <h6>{{t.label}} | {{ t.volt}}</h6>
+              }
+              @else{
+                <h6>{{t.label}}</h6>
+              }
+              <p>{{t.part_number}}</p>
+              <p>{{t.description}}</p>
+              <p style="color:#09a5dd"><b>{{t.price}} DKK</b></p>
+            </div>
+          </div>
+      </div>
+        
+        
+    </div>
+
     <!-- <div class="hint" *ngIf="!locked()">Drag a component into a rail →</div> -->
-    <div class="hint" *ngIf="locked()">Locked: connections only</div>
+    
   </div>
 
   <!-- Panel -->
-  <div #panelRef class="panel" [ngStyle]="panelStyle()" (mousedown)="onPanelClick()">
-    
+  <!-- <div #panelRef class="panel" [ngStyle]="panelStyle()" (mousedown)="onPanelClick()"> -->
+  <div #panelRef class="panel no-select" (mousedown)="onPanelClick() ">
+    <!-- <img src="assets/cabinet.png"> -->
     <div class="grid"></div> <!--background grid like -->
 
+    <!--<svg class="wires" -creates an SVG drawing surface on top of your panel where all wires are drawn.-->
     <svg class="wires"
       [attr.width]="'100%'"
       [attr.height]="panelHeight()"
       [style.pointer-events]="locked() ? 'none' : 'auto'">
-
+      <!--if locked() is true then → SVG wires will NOT react to mouse clicks or drags as it is set to none 
+      Below c is for connections and visible connections  returns all current connectioins-->
       <ng-container *ngFor="let c of visibleConnections()">
         <polyline
           [attr.points]="getPolylinePoints(c)"
@@ -80,7 +87,10 @@
       [ngStyle]="railStyle(i)"
       [class.highlight]="hoverRailIndex() === i && isDragging()"
     >
-          <div class="rail-title">Rail {{ i + 1 }}</div>
+      <img src="assets/DIN-Rail-Used-2.png" class="rail-image" style="width: 992px;height: 250px;" >
+          
+      <!--width: 702px; scale-factor : 3-->
+      <!-- <div class="rail-title">Rail {{ i + 1 }}</div> -->
 
         <!-- Drop preview (if you kept it) -->
           <div
@@ -90,9 +100,12 @@
           [style.top.px]="-preview()!.h/2"
           [style.width.px]="preview()!.w"
           [style.height.px]="preview()!.h"
-          ></div>
+          >
+          <img [src]="preview()?.images" style="width: 100%; height: 100%;"  class="box-shadow">
+        </div>
 
         <!-- Parts on this rail -->
+         <!--incorrect comments-->
           <ng-container *ngFor="let p of parts()">
               <div
                 *ngIf="p.railIndex === i"
@@ -103,28 +116,31 @@
                 [style.top.px]="-p.h/2"  
                 [style.width.px]="p.w"
                 [style.height.px]="p.h"
+                 [title]="p.label + ' '+ p.volt  +' ('+p.w+'x'+p.h+')'"
                 (mousedown)="onPartMouseDown($event, p.id)"
                 (dblclick)="onDeletePart(p.id, $event)"
               >
-                <div class="part-label">{{ p.label }}</div>
-
+                <!-- <div class="part-label">{{ p.label }}</div> -->
+              <img [src]="p.imagePath" style="width: 100%; height: 100%;" class="box-shadow">
                 <!-- Connectors (visible only when locked) -->
                 <button
                   *ngIf="showConnectors()"
-                  class="connector"
+                  [class]="selectedPart?.id === p.id && selectedPart?.port === 'top' ? 'selected-connector' : p.disabled ? 'rule-connector':'connector'"
                   [ngStyle]="connectorStyle(p, 'top')"
                   (mousedown)="$event.stopPropagation()"
                   (click)="onClickConnector(p.id, 'top')"
                   title="Top connector"
+                  [disabled]="p.disabled"
                 ></button>
 
                 <button
                   *ngIf="showConnectors()"
-                  class="connector"
+                  [class]="selectedPart?.id === p.id && selectedPart?.port === 'bottom' ? 'selected-connector' : p.disabled ? 'rule-connector':'connector'"
                   [ngStyle]="connectorStyle(p, 'bottom')"
                   (mousedown)="$event.stopPropagation()"
                   (click)="onClickConnector(p.id, 'bottom')"
                   title="Bottom connector"
+                  [disabled]="p.disabled"
                 ></button>
             </div>
           </ng-container>
@@ -133,6 +149,96 @@
     </div>
 
   </div>
+
+  <div class="right-sidebar no-select ">
+    
+      <div class="tool-title">
+            <pre>Panel Controls</pre>
+      </div>
+
+    <div class="right-sidebar-body">
+    
+      <div class="right-sidebar-body-p1">
+          <div class="mode-text-button">
+            <p>Current Mode</p>
+            <button><h3>{{!locked() ?'Design Mode':'Connection Mode'}}</h3></button>
+          </div>
+
+          <div class="rails-picker">
+              <label>
+                  <p>Number of Rails</p>
+              </label>
+              <select
+                [value]="railsCount()"
+                (change)="setRailsCount(+$any($event.target).value)"
+                [disabled]="locked()"
+                title="{{ locked() ? 'Unlock to change rail count' : 'Change rail count' }}"
+              >
+                <option *ngFor="let n of [1,2,3,4]" [value]="n">{{n}}</option>
+              </select>
+              <div class="fixed-stats">
+                <p >Single Rail : 1500 DKK</p>
+                <p >Additional Rails : 750 DKK</p>
+              </div>
+          </div>
+
+        
+
+          <div class="dynamic-stats">
+            <div class="stats-boxes">
+              <h3>{{parts().length}}</h3>
+              <p>Components</p>
+            </div>
+            <div class="stats-boxes">
+              <h3>{{totalProductPrice()+ totalRailPrice()}} DKK</h3>
+              <p>Total Price</p>
+            </div>
+            
+          </div>
+
+          <!--Dynamically change-->
+          <div class="mode-box">
+            <p>{{!locked() ?'Design Mode':'Connection Mode'}}</p>
+
+            <div class="mode-desc-container">
+                @if(!locked())
+                { <div class="mode-desc" >
+                    <p>Drag components from library to rails.</p>
+                    <p>Components sit on the DIN-Rails.</p>
+                    <p>Components do not overlap.</p>
+                    <p>Click Finalize when ready.</p>
+                   </div>
+                }
+                @else{
+                  <div class="from-to-container">
+                    <p>From</p>
+                    <div class="from-container">
+                      <p>Component : <strong [class]="connectionFromPartDetails ? 'red-color':'no-color'">{{connectionFromPartDetails || 'Not Selected'}}</strong> </p>
+                      <p>Port : <strong [class]="connectionFromPortDetails ? 'red-color':'no-color'">{{connectionFromPortDetails || 'Not Selected'}}</strong></p>
+                    </div>
+                    <p>To</p>
+                    <div class="to-container">
+                      <p>Component :<strong [class]="connectionToPartDetails ? 'blue-color':''">{{connectionToPartDetails || 'Not Selected'}}</strong></p>
+                      <p>Port : <strong [class]="connectionToPortDetails ? 'blue-color':''">{{connectionToPortDetails || 'Not Selected'}}</strong></p>   
+                    </div>
+                  </div>
+                }
+             
+            </div>
+          </div>
+
+        </div>
+
+        <div class="right-sidebar-body-p2">
+          <button (click)="locked() ? unfinalizeLayout() : finalizeLayout()" [ngClass]="{'active':!locked(),
+                      'inactive':locked()
+          }">
+            {{!locked()?'Finalise Design':'Reset & Edit Layout'}}
+          </button>
+          <!-- <button (click)="unfinalizeLayout()" [disabled]="!locked()">Unlock Layout</button> -->
+        </div>
+  </div> 
+</div>
 
 </div>
 

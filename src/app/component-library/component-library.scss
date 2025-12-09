@@ -1,0 +1,197 @@
+.no-select {
+  -webkit-touch-callout: none;
+  /* iOS Safari */
+  -webkit-user-select: none;
+  /* Safari */
+  -khtml-user-select: none;
+  /* Konqueror HTML */
+  -moz-user-select: none;
+  /* Old versions of Firefox */
+  -ms-user-select: none;
+  /* Internet Explorer/Edge */
+  user-select: none;
+  /* Non-prefixed version, currently supported by Chrome, Edge, Opera and Firefox */
+}
+.toolbox {
+
+  // position: sticky;
+  // top: 20px;
+  border: 1px solid #e5e7eb;
+  //border-radius: 14px;
+  padding: 12px;
+  //background: linear-gradient(180deg, #ffffff, #fafafa);
+  //box-shadow: 0 4px 14px rgb(0 0 0 / 0.04);
+  /* NEW: define a sensible max height and make inner list scroll */
+  max-height: calc(100vh - 130px);
+  /* keeps within viewport */
+  display: flex;
+  flex-direction: column;
+  padding-left: 18px;
+
+}
+
+
+.toolbox.disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* Keep the title visible while scrolling */
+.tool-title {
+
+  font-size: 18px;
+  font-weight: 700;
+  //margin-bottom: 10px;
+  letter-spacing: .2px;
+  // position: sticky;
+  // top: 0;
+  margin-top: 10px;
+  // padding-bottom: 10px;
+  // z-index: 1;
+  text-align: start;
+}
+
+.hint {
+  margin-top: 10px;
+  margin-bottom: 10px;
+  text-align: start;
+  color: grey;
+  font-size: 14px;
+}
+
+/* NEW: scrollable area for tools */
+.toolbox-body {
+  margin-top: 15px;
+  overflow: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, .25) transparent;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  /* room for scrollbar */
+  /* Optional: a soft fade at the bottom/top can be added with :before/:after if desired */
+
+  .tool-container {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    // justify-content: space-between;
+    gap: 9px;
+    margin-right: 8px;
+    padding: 8px;
+    border: 1px solid rgb(212, 212, 212);
+    border-radius: 16px;
+    cursor: grab;
+  }
+
+  .img-desc {
+
+    h6 {
+      font-size: 11px;
+      display: flex;
+      text-overflow: ellipsis;
+      overflow-wrap: anywhere;
+    }
+
+    P {
+      font-size: 11px;
+    }
+
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    justify-content: space-between;
+
+    p {
+      color: grey;
+    }
+
+    .desc-container {
+      display: flex;
+      flex-direction: column;
+
+    }
+  }
+
+  .tool-container:hover {
+    background-color: rgb(247, 247, 247);
+    border: 1px solid rgb(192, 191, 191);
+    box-shadow: 0 6px 6px rgb(0 0 0 /0.1);
+    transform: translateY(1px);
+
+  }
+}
+
+
+/* Optional: nicer scrollbars (WebKit/Chromium) */
+.toolbox-body::-webkit-scrollbar {
+  width: 10px;
+}
+
+.toolbox-body::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, .15);
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+.toolbox-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+
+.tool {
+  user-select: none;
+  -webkit-user-drag: none;
+  height: max-content;
+  //border: 1px solid #e5e7eb;
+  //border-radius: 12px;
+  // padding: 8px 10px;
+  // margin-bottom: 15px;
+  cursor: grab;
+  transition: transform .12s ease, box-shadow .2s ease, border-color .2s ease, background .2s ease;
+  // display:  flex;
+  // flex-direction: column;
+  // justify-content: center;
+  // align-items: center;
+
+  // border: 2px solid red;
+
+}
+
+.tool:hover {
+  transform: translateY(-1px);
+  //box-shadow: 0 6px 20px rgb(0 0 0 / 0.06);
+  //box-shadow: 0 6px 20px rgb(0 0 0 /0.2);
+  //border-color: #d1d5db;
+  background: transparent;
+  filter: drop-shadow(0px 6px 10px rgba(0, 0, 0, 0.25));
+  /* gray-300 */
+}
+
+.tool:active {
+  cursor: grabbing;
+}
+
+.tool-icon {
+  font-weight: 700;
+  color: #111827;
+  /* gray-900 */
+}
+
+.tool-meta {
+  font-size: 11px;
+  color: #6b7280;
+  /* gray-500 */
+  background: #f3f4f6;
+  padding: 2px 6px;
+  border-radius: 999px;
+}
+
+.hint {
+  margin-top: 10px;
+  margin-bottom: 10px;
+  text-align: start;
+  color: grey;
+  font-size: 14px;
+}

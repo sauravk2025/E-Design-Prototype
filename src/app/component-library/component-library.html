@@ -1,0 +1,40 @@
+  <!-- <div class="toolbox no-select" [class.disabled]="locked()">
+    
+    <div class="tool-title">
+      <pre>Component  Library</pre>
+    </div>
+
+    <div class="hint" *ngIf="!locked()"><p>Drag a component into a rail</p></div>
+    <div class="hint" *ngIf="locked()"><p>Locked: connections only</p></div>
+    
+    <div class="toolbox-body">
+      <div class="tool-container" *ngFor="let t of toolbox" (mousedown)="onStartDragToolbox(t, $event)">
+        <div
+          class="tool"
+          (mousedown)="onStartDragToolbox(t, $event)"
+          [style.--w.px]="t.w"
+          [style.--h.px]="t.h"
+          [title]="t.label + ' '+ t.volt + ' ('+t.w+'x'+t.h+')'">
+          <img [src]="t.imagePath" style="max-height:80px">
+          </div>
+
+          <div class="img-desc">
+            <div class="desc-container">
+              @if(t.volt){
+                <h6>{{t.label}} | {{ t.volt}}</h6>
+              }
+              @else{
+                <h6>{{t.label}}</h6>
+              }
+              <p>{{t.part_number}}</p>
+              <p>{{t.description}}</p>
+              <p style="color:#09a5dd"><b>{{t.price}} DKK</b></p>
+            </div>
+          </div>
+      </div>
+        
+        
+    </div>
+
+    
+  </div> -->

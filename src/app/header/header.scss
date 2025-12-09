@@ -1,0 +1,57 @@
+.no-select {
+  -webkit-touch-callout: none;
+  /* iOS Safari */
+  -webkit-user-select: none;
+  /* Safari */
+  -khtml-user-select: none;
+  /* Konqueror HTML */
+  -moz-user-select: none;
+  /* Old versions of Firefox */
+  -ms-user-select: none;
+  /* Internet Explorer/Edge */
+  user-select: none;
+  /* Non-prefixed version, currently supported by Chrome, Edge, Opera and Firefox */
+}
+
+.toolbar {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 7px;
+  height: 80px;
+  box-shadow: 0px 1px 7px rgb(122, 121, 121);
+  width: 100%;
+}
+
+.toolbar h1 {
+  padding-left: 18px;
+}
+
+.header-function {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-right: 18px;
+}
+
+.toolbar button {
+  background: #0fa2d9;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  //box-shadow: 0 2px 0 rgb(0 0 0 / 0.06);
+  transition: transform .05s ease, box-shadow .2s ease, opacity .2s ease;
+}
+
+.toolbar button[disabled] {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+.toolbar button:not([disabled]):active {
+  transform: translateY(1px);
+}

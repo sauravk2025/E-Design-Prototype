@@ -1,10 +1,23 @@
 /* You can add global styles to this file, and also import other style files */
-.rails-picker
-{
-  // background-color: red;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 3.75vw;
-  
+// .rails-picker
+// {
+//   // background-color: red;
+//   display: flex;
+//   align-items: center;
+//   justify-content: space-between;
+//   width: 3.75vw;
+//   margin: 0;
+//   padding: 0;
+// }
+*{
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    padding: 0;  
+    scrollbar-width: thin;              /* For Firefox */
+    scrollbar-color: #999 #f1f1f1; 
+    /* overflow: hidden; */
+    
+}
+body{
+  overflow: hidden;
 }
