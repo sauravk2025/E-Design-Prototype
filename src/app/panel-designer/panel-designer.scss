@@ -6,184 +6,6 @@
   justify-content: space-evenly;
 }
 
-
-.toolbox {
-
-  // position: sticky;
-  // top: 20px;
-  border: 1px solid #e5e7eb;
-  //border-radius: 14px;
-  padding: 12px;
-  //background: linear-gradient(180deg, #ffffff, #fafafa);
-  //box-shadow: 0 4px 14px rgb(0 0 0 / 0.04);
-  /* NEW: define a sensible max height and make inner list scroll */
-  max-height: calc(100vh - 130px);
-  /* keeps within viewport */
-  display: flex;
-  flex-direction: column;
-  padding-left: 18px;
-
-}
-
-
-.toolbox.disabled {
-  opacity: 0.6;
-  pointer-events: none;
-}
-
-/* Keep the title visible while scrolling */
-.tool-title {
-
-  font-size: 18px;
-  font-weight: 700;
-  //margin-bottom: 10px;
-  letter-spacing: .2px;
-  // position: sticky;
-  // top: 0;
-  margin-top: 10px;
-  // padding-bottom: 10px;
-  // z-index: 1;
-  text-align: start;
-}
-
-.hint {
-  margin-top: 10px;
-  margin-bottom: 10px;
-  text-align: start;
-  color: grey;
-  font-size: 14px;
-}
-
-/* NEW: scrollable area for tools */
-.toolbox-body {
-  margin-top: 15px;
-  overflow: auto;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(0, 0, 0, .25) transparent;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  /* room for scrollbar */
-  /* Optional: a soft fade at the bottom/top can be added with :before/:after if desired */
-
-  .tool-container {
-    flex-grow: 1;
-    display: flex;
-    align-items: center;
-    // justify-content: space-between;
-    gap: 9px;
-    margin-right: 8px;
-    padding: 8px;
-    border: 1px solid rgb(212, 212, 212);
-    border-radius: 16px;
-    cursor: grab;
-  }
-
-  .img-desc {
-
-    h6 {
-      font-size: 11px;
-      display: flex;
-      text-overflow: ellipsis;
-      overflow-wrap: anywhere;
-    }
-
-    P {
-      font-size: 11px;
-    }
-
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    justify-content: space-between;
-
-    p {
-      color: grey;
-    }
-
-    .desc-container {
-      display: flex;
-      flex-direction: column;
-
-    }
-  }
-
-  .tool-container:hover {
-    background-color: rgb(247, 247, 247);
-    border: 1px solid rgb(192, 191, 191);
-    box-shadow: 0 6px 6px rgb(0 0 0 /0.1);
-    transform: translateY(1px);
-
-  }
-}
-
-
-/* Optional: nicer scrollbars (WebKit/Chromium) */
-.toolbox-body::-webkit-scrollbar {
-  width: 10px;
-}
-
-.toolbox-body::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, .15);
-  border-radius: 8px;
-  border: 2px solid transparent;
-  background-clip: content-box;
-}
-
-.toolbox-body::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-
-.tool {
-  user-select: none;
-  -webkit-user-drag: none;
-  height: max-content;
-  //border: 1px solid #e5e7eb;
-  //border-radius: 12px;
-  // padding: 8px 10px;
-  // margin-bottom: 15px;
-  cursor: grab;
-  transition: transform .12s ease, box-shadow .2s ease, border-color .2s ease, background .2s ease;
-  // display:  flex;
-  // flex-direction: column;
-  // justify-content: center;
-  // align-items: center;
-
-  // border: 2px solid red;
-
-}
-
-.tool:hover {
-  transform: translateY(-1px);
-  //box-shadow: 0 6px 20px rgb(0 0 0 / 0.06);
-  //box-shadow: 0 6px 20px rgb(0 0 0 /0.2);
-  //border-color: #d1d5db;
-  background: transparent;
-  filter: drop-shadow(0px 6px 10px rgba(0, 0, 0, 0.25));
-  /* gray-300 */
-}
-
-.tool:active {
-  cursor: grabbing;
-}
-
-.tool-icon {
-  font-weight: 700;
-  color: #111827;
-  /* gray-900 */
-}
-
-.tool-meta {
-  font-size: 11px;
-  color: #6b7280;
-  /* gray-500 */
-  background: #f3f4f6;
-  padding: 2px 6px;
-  border-radius: 999px;
-}
-
-
 /* Panel & rails */
 .panel {
   position: relative;
@@ -192,11 +14,10 @@
   overflow: auto;
   min-height: 300px;
   box-shadow: 0 6px 24px rgb(0 0 0 / 0.05);
-  max-height: calc(100vh - 24px);
   scrollbar-width: thin;
   scrollbar-color: rgba(0, 0, 0, .25) transparent;
   height: 100vh;
-  max-height: calc(100vh - 105px);
+  max-height: calc(100vh - 103px);
 
   background: radial-gradient(circle,
       rgba(255, 255, 255, 0.95) 0%,
@@ -254,7 +75,7 @@
 
 }
 
-.box-shadow {
+.boxShadow {
   // /box-shadow: 0 6px 20px rgb(0 0 0 /0.2);
   filter: drop-shadow(0 6px 10px rgb(0 0 0 /0.5));
 
@@ -272,6 +93,8 @@
 /* Rail is a single centered line (0-height with border-top) */
 .rail {
   position: absolute;
+  // display: flex;
+  // flex-direction: column-reverse;
   // height: 200px;
   //background-color: red;
   // left: 0; /* actual left is set via [ngStyle] -> getRailLeft() */
@@ -281,10 +104,19 @@
   .rail-image {
     position: absolute;
     left: -146px;
-    top: -121px;
+    top: -108px;
 
   }
+  .rail-image-blur{
+    position: absolute;
+    left: -20px;
+    top: -108px;
+  }
 
+}
+
+.externalSource{
+    position: absolute;
 }
 
 // .rail.highlight {
@@ -315,6 +147,25 @@
   border: 1px solid #e5e7eb;
 }
 
+.phaseFromBottom
+{
+  text-align: center;
+  position: absolute;
+  bottom: -19px !important;
+  font-weight: 600;
+  right: 2px!important;
+
+}
+.phaseFromTop
+{
+  text-align: center;
+  position: absolute;
+  top: -17px!important;
+  font-weight: 600;
+  right:5px!important;
+
+}
+
 /* Parts */
 .part {
   position: absolute;
@@ -336,6 +187,10 @@
   //border-color: #cbd5e1;
 
   /* slate-300 */
+}
+.part.delete{
+  transform: scale(1.03);
+  filter: drop-shadow(0px 7px 12px rgba(235, 13, 6, 0.25));
 }
 
 .part.dragging {
@@ -467,238 +322,7 @@
   cursor: grab;
 }
 
-.right-sidebar {
 
-  // position: sticky;
-  // top: 20px;
-  border: 1px solid #e5e7eb;
-  //border-radius: 14px;
-  padding: 12px;
-  //background: linear-gradient(180deg, #ffffff, #fafafa);
-  //box-shadow: 0 4px 14px rgb(0 0 0 / 0.04);
-  /* NEW: define a sensible max height and make inner list scroll */
-  height: 100vh;
-  /* keeps within viewport */
-  display: flex;
-  flex-direction: column;
-  //padding-left: 18px;
-  padding-right: 18px;
-  max-height: calc(100vh - 130px);
-}
-
-.right-sidebar-body {
-  margin-top: 15px;
-  // scrollbar-width: thin;
-  // scrollbar-color: rgba(0, 0, 0, .25) transparent;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: 10px;
-  height: 100%;
-
-  p {
-    font-size: 13px;
-  }
-
-  /* room for scrollbar */
-  /* Optional: a soft fade at the bottom/top can be added with :before/:after if desired */
-}
-
-/* Optional: nicer scrollbars (WebKit/Chromium) */
-// .right-sidebar-body::-webkit-scrollbar {
-//   width: 10px;
-// }
-
-// .right-sidebar-body::-webkit-scrollbar-thumb {
-//   background: rgba(0, 0, 0, .15);
-//   border-radius: 8px;
-//   border: 2px solid transparent;
-//   background-clip: content-box;
-// }
-
-// .right-sidebar-body::-webkit-scrollbar-track {
-//   background: transparent;
-// }
-
-.right-sidebar-body-p1 {
-  height: 65%;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: 5px;
-}
-
-.right-sidebar-body-p2 {
-  height: 35%;
-  display: flex;
-  align-items: flex-end;
-}
-
-
-.mode-text-button {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-
-
-  button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-grow: 1;
-
-    background: transparent;
-    color: rgb(75, 75, 75);
-    border: none;
-    border-radius: 10px;
-    border: 1px solid rgb(212, 212, 212);
-    padding: 10px;
-    font-weight: 600;
-    cursor: pointer;
-    //box-shadow: 0 2px 0 rgb(0 0 0 / 0.06);
-    transition: transform .05s ease, box-shadow .2s ease, opacity .2s ease;
-  }
-
-  h3 {
-
-    font-size: 14px;
-  }
-}
-
-.rails-picker {
-  //background-color: red;
-
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-
-  select {
-    // margin-top: 5px;
-    padding: 10px;
-    border-radius: 10px;
-    outline: none;
-    border: 1px solid rgb(201, 201, 201);
-  }
-
-  .fixed-stats {
-    display: flex;
-    flex-direction: column;
-    margin-top: 4px;
-    color: grey;
-
-    p {
-      font-size: 12px;
-    }
-
-    //background-color: red;
-    //font-size: small;
-  }
-}
-
-.dynamic-stats {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-
-  .stats-boxes {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-evenly;
-    border: 1px solid rgb(201, 201, 201);
-    padding: 10px;
-    border-radius: 16px;
-
-    p {
-      color: grey;
-      font-size: 13px;
-    }
-  }
-}
-
-.mode-box {
-  padding: 10px;
-  border: 1px solid rgb(201, 201, 201);
-  border-radius: 16px;
-}
-
-.mode-desc-container
-{
-  margin-top: 5px;
-  p {
-    font-size: 13px
-  }
-}
-
-
-.mode-desc {
-  line-height: 22px;
-  color: grey;
-}
-
-
-.from-to-container
-{
-  display: flex;
-  flex-direction: column;
-  // gap: 10px;
-  color: grey;
-  p{
-      font-size: 12px
-  }
-
-  .from-container{
-    display: flex;
-    flex-direction: column;
-    border: 1px solid rgb(201, 201, 201);
- 
-    padding:5px;
-    border-radius: 16px;
-    .red-color{
-      color: rgb(245, 83, 83);
-    }
-
-    margin-bottom: 10px;
-  }
-  .to-container{
-    display: flex;
-    flex-direction: column;
-    border: 1px solid rgb(201, 201, 201);
-    padding: 5px;
-    border-radius: 16px;
-    .blue-color{
-      color:#09a5dd;
-    }
-  }
-
-
-}
-
-.inactive {
-  width: 100%;
-  background: #f0f0f0;
-  color: rgb(114, 114, 114);
-  border-radius: 10px;
-  border: 1px solid rgb(148, 148, 148);
-  padding: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  //box-shadow: 0 2px 0 rgb(0 0 0 / 0.06);
-  transition: transform .05s ease, box-shadow .2s ease, opacity .2s ease;
-}
-
-.active {
-  width: 100%;
-  background: #09a5dd;
-  color: white;
-  border: none;
-  border-radius: 10px;
-  padding: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  //box-shadow: 0 2px 0 rgb(0 0 0 / 0.06);
-  transition: transform .05s ease, box-shadow .2s ease, opacity .2s ease;
-}
 
 
 .no-select {

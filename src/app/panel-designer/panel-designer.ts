@@ -9,30 +9,32 @@ import {
   inject,
 } from '@angular/core';
 
-import { PartType,PlacedPart,Port,ConnectorRef,Connection,Pt,Rect } from '../shared/interfaces';
+import { PlacedPart, Port, ConnectorRef, Connection, Pt, Rect } from '../shared/interfaces';
 import { CommonModule } from '@angular/common';
 import { Common } from '../shared/common';
 import { Header } from "../header/header";
-import { colorCycle,ComponentList } from '../shared/constants';
+import { colorCycle, ComponentList } from '../shared/constants';
 import { ComponentLibrary } from "../component-library/component-library";
-import { MAX_RAILS, RAIL_WIDTH, RAIL_SPACING, LAST_BOTTOM_MARGIN, CONNECTOR_SIZE, GRID, ROUTE_STEP, OBSTACLE_CLEAR, STUB_LEN, RAIL_BLOCK_THICK, FANOUT_GAP, TURN_PENALTY, WIRE_CLEAR, WIRE_STROKE} from '../shared/constants';
-
-
+import { MAX_RAILS, RAIL_WIDTH, RAIL_SPACING, LAST_BOTTOM_MARGIN, CONNECTOR_SIZE, GRID, ROUTE_STEP, OBSTACLE_CLEAR, STUB_LEN, RAIL_BLOCK_THICK, FANOUT_GAP, TURN_PENALTY, WIRE_CLEAR, WIRE_STROKE } from '../shared/constants';
+import { PanelControls } from "../panel-controls/panel-controls";
+import { MatDialog } from '@angular/material/dialog';
+import { PhaseDialogue } from '../phase-dialogue/phase-dialogue';
 
 @Component({
   selector: 'app-panel-designer',
   standalone: true,
-  imports: [CommonModule, Header, ComponentLibrary],
+  imports: [CommonModule, Header, ComponentLibrary, PanelControls],
   templateUrl: './panel-designer.html',
   styleUrls: ['./panel-designer.scss'],
 })
 
 
-
 export class PanelDesignerComponent implements AfterViewInit {
 
   private commonService = inject(Common);
-  
+  readonly dialog = inject(MatDialog);
+
+
   readonly MAX_RAILS = MAX_RAILS;             //maximum number of rails = 5
   readonly RAIL_WIDTH = RAIL_WIDTH;          // rail width of each rail
   readonly RAIL_SPACING = RAIL_SPACING;        // margin-top before every rail
@@ -55,12 +57,14 @@ export class PanelDesignerComponent implements AfterViewInit {
   //private readonly SOURCE_GAP = 12; //This is the horizontal spacing between wires that start from different connectors on the SAME component.
   private usedColors = new Set<string>();  // all colors ever used for any wire
   //private WIRE_BLOCK_THICK = 8; //Thickness of wire rectangle used to block routing area around an existing wire.
-  private pathCache = new Map<string, Pt[]>();   // pathCache stores the auto-routed polyline points (Pt[]) for each connection, indexed by the connection ID.
+  // private pathCache = new Map<string, Pt[]>();   // pathCache stores the auto-routed polyline points (Pt[]) for each connection, indexed by the connection ID.
   private pathEpoch = 0; //pathEpoch is a version counter that lets the router know:"The environment changed, re-route everything! Increases when Dragging a component ,Deleting or adding a component, Adding/removing connections etc
   private colorIndex = 0; //for traversing across the colorCycle array
-  
+
   private colorCycle = colorCycle
   toolbox = ComponentList;
+
+ 
 
   isDragging = this.commonService.isDragging;
   hoverRailIndex = this.commonService.hoverRailIndex;
@@ -68,55 +72,51 @@ export class PanelDesignerComponent implements AfterViewInit {
   railsCount = this.commonService.railsCount
   parts = this.commonService.parts
   locked = this.commonService.locked;
-  // railsCount = signal<number>(1); //number of rails
-  // locked = signal<boolean>(false); //locked() == true after we click finalise layout
-  // isDragging = signal<boolean>(false); //check if user is dragging
-  //hoverRailIndex = signal<number | null>(null);//The index of the rail that the mouse is currently hovering over.used in dragging
-  //preview = signal<{ x: number; w: number; h: number; railIndex: number; images: string } | null>(null); //A fake “ghost component” drawn under the mouse while dragging from toolbox or dragging on panel.
-//parts = signal<PlacedPart[]>([]); //The array of all components placed on the panel.
+  totalProductPrice = this.commonService.totalProductPrice
+  totalRailPrice = this.commonService.totalRailPrice
+  railsTop = this.commonService.railsTop;
+  selectedPart = this.commonService.selectedPart
+  connectionFromPartDetails = this.commonService.connectionFromPartDetails
+  connectionFromPortDetails = this.commonService.connectionFromPortDetails
+  connectionToPartDetails = this.commonService.connectionToPartDetails
+  connectionToPortDetails = this.commonService.connectionToPortDetails
+  pathCache = this.commonService.pathCache
+  pendingFrom = this.commonService.pendingFrom
+  connections = this.commonService.connections
+  portColors = this.commonService.portColors
+  portPosition = this.commonService.portPosition
+  newArrayofConnections = this.commonService.newArrayofConnections
+  isDeleted = this.commonService.isDeleted
 
-
-  totalRailPrice = signal<number>(1500);
-  totalProductPrice = signal<number>(0)
-  newArrayofConnections = signal<{ fromPartId: string, fromPartConnector: string, toPartId: string, toPartConnector: string, connectionId: string }[] | []>([])
-  //components used
-  connections = signal<Connection[]>([]); //All the wires drawn between components.
-  pendingFrom = signal<ConnectorRef | null>(null); //The connector the user clicked first before drawing a wire.
+  // newArrayofConnections = signal<{ fromPartId: string, fromPartConnector: string, toPartId: string, toPartConnector: string, connectionId: string }[] | []>([])
   // Visual-only drag state (kept from your version)
   draggingPartId = signal<string | null>(null);//The ID of the component currently being dragged.
   editingConnId = signal<string | null>(null); //The connection (wire) currently being manually edited.
   dragHandle = signal<{ connId: string; index: number } | null>(null); //The specific handle/bend point of the wire the user is dragging.
-  selectedPart: { id: string, port: string } | null = null;
-  connectionFromPartDetails = ''
-  connectionFromPortDetails = ''
-  connectionToPartDetails = ''
-  connectionToPortDetails = ''
 
-  
- 
+  deletingPartId = signal<string>(' ')
+  part1Phase: number = 0;
+  part2Phase: number = 0;
+  lastIndex:number = 0;
 
-  private invalidatePaths() {
-    this.pathCache.clear();  //wipe the cache and let the router recompute clean orthogonal paths.
-    //PATHCACHE looks like this
-    //key: "2ca2fb40-16ae-45d6-b570-7b3bb1c6a25d" - connection id
-    // value: Array(4)
-    // 0: {x: 540, y: 270}
-    // 1: {x: 540, y: 300}
-    // 2:{x: 680, y: 300}
-    // 3: {x: 680, y: 270}
-    //Whenever a new auto-connected wire path is computed → it gets stored in pathCache
-    //Whenever any component OR wire is added, deleted, moved, or modified → pathCache.clear() runs
-    //CACHE is stored so that next we draw the same line instead of recalculating it we can identify this 
+  openDialog(id:string) {
+    const dialog = this.dialog.open(PhaseDialogue, {disableClose: true })
+    dialog.afterClosed().subscribe(res =>{
+      this.parts().forEach(p =>{
+        if(p.id == id)
+        {
+          if(this.portPosition() == 'top')
+          {
+            p.phasePositionTop = res
+          }
+          if(this.portPosition() =='bottom')
+          {
+            p.phasePositionBottom = res
+          }
+        }
+      })
+    })
   }
-  //PathCache is a temporary memory where you store the auto-routed path for each wire.It’s a Map where:
-  // Key = connection ID (like "d4cb98e8-ab30-4694-bf55-094480445192").Value = Pt[] → list of points [{x, y}] that form the polyline.
-  //UI may refresh 5, 10, or 50 times (resize, zoom, other data changes)During these UI refreshes, the app reuses cached wire path instantly. hence speed is improved. pathCahce is cleared whenevr a change in design occurs
-
-
-  // //Rounding a number to the nearest grid point.grid” is a spacing system that keeps: wires straight,90° angles clean, routing predictable
-  // private snap(n: number, step = this.ROUTE_STEP) {
-  // return Math.round(n / step) * step;
-  // }
 
   /** Center X of a placed part in panel coords */
   //It returns the absolute X coordinate (horizontal position) of the center of a component on the panel.
@@ -124,7 +124,7 @@ export class PanelDesignerComponent implements AfterViewInit {
   //used to place the connectors in the center
   // if 2 parts are straight, then we can draw a straight line
   private partCenterX(p: PlacedPart): number {
-    const railLeft = this.getRailLeft();
+    const railLeft = this.commonService.getRailLeft();
     //p.x - distance of the component from the left edge of the rail
     return railLeft + p.x + p.w / 2;
   }
@@ -224,13 +224,6 @@ export class PanelDesignerComponent implements AfterViewInit {
   }
 
 
-  // Rails Y positions: (i+1) * 200 
-  //It returns an array of Y-coordinates for each rail.that is y cordinate of each rail from panel top
-  railsTop = computed(() =>
-    Array.from({ length: this.railsCount() }, (_, i) => (i + 1) * this.RAIL_SPACING)
-  );
-
-
   //Returns the total height of your panel, including bottom margin.
   // Panel height: last rail plus bottom margin
   panelHeight = computed(() => {
@@ -290,13 +283,13 @@ export class PanelDesignerComponent implements AfterViewInit {
   ngAfterViewInit(): void {
 
     const panelEl = this.panelRef?.nativeElement;
-    console.log('consttuct',panelEl)
     this.commonService.panelEl.set(panelEl)
-
+    
     // When railsCount changes, drop parts on removed rails and prune wires/pending.
     //afterViewInit runs only once
 
     effect(() => {
+   
       const maxRails = this.railsCount(); //current rail count
       const currentParts = this.parts();
 
@@ -322,10 +315,10 @@ export class PanelDesignerComponent implements AfterViewInit {
           this.pendingFrom.set(null); //if the seocnd component is removed, forget the first clicked.
         }
 
-        this.prunePortColors(keepIds); //removed stored colors for wires that are deleted
+        this.commonService.prunePortColors(keepIds); //removed stored colors for wires that are deleted
       }
 
-      this.invalidatePaths(); //clear cache
+      this.commonService.invalidatePaths(); //clear cache
       // What signals does it react to?
       // this.railsCount()
       // this.parts()
@@ -363,7 +356,7 @@ export class PanelDesignerComponent implements AfterViewInit {
       });
       // touching this effect guarantees it runs when either changes
       // (we only need the side-effect)
-      this.invalidatePaths();
+      this.commonService.invalidatePaths();
 
       // Whenever parts change → wires must be rerouted.
 
@@ -376,205 +369,11 @@ export class PanelDesignerComponent implements AfterViewInit {
 
 
 
-  // Rails count (1..5), disabled when locked (selector itself also disabled in HTML)
-  //This function updates the number of rails in the panel and ensures the entire system stays valid and consistent after the change.Prevent changes when layout is locked. Remove parts that are placed on rails that no longer exist when rail count decreases. Remove connections that reference removed parts. Remove color assignments for deleted ports
-  setRailsCount(count: number) {
-    if (this.locked()) return;
-    const n = Math.max(1, Math.min(this.MAX_RAILS, count));
-    if (n === this.railsCount()) return; //If the new value is the same as current rails, do nothing.
-
-    this.railsCount.set(n); //else change railsCount
-
-    if (this.railsCount() == 1) {
-      this.totalRailPrice.set(1500)
-    }
-    else {
-      let price = (this.railsCount() - 1) * 750 + 1500
-      this.totalRailPrice.set(price)
-    }
-
-    // Atomic pruning (parts + wires + pending)
-    const keptParts = this.parts().filter(p => p.railIndex < n);
-    //Reads the current parts list.Keeps only the components that are placed on valid rails. That is if current number of rail is 3, but before we kept component of rail 4.
-    if (keptParts.length !== this.parts().length) {
-      //if any components were removed when we reduced or changed rail Number
-      this.parts.set(keptParts);//chnaging the parts array
-      let price = 0
-      this.parts().forEach(element => {
-        price += element.price
-      });
-      this.totalProductPrice.set(price);
-
-      // keepIds is to make a set (unique list) of remaining part IDs.Used to check if a wire is still valid
-      const keepIds = new Set(keptParts.map(p => p.id));
-
-      //Keeps only those wires whose from part still exists and to part still exists
-      this.connections.set(
-        this.connections().filter(
-          c => keepIds.has(c.from.partId) && keepIds.has(c.to.partId)
-        )
-      );
-
-      this.prunePortColors(keepIds); //Removes stored color assignments for ports of deleted parts
-
-      const pending = this.pendingFrom(); //when user clicked on component1 for the first connection points
-      if (pending && !keepIds.has(pending.partId)) { //user clicked a connector to start wiring, but that part got removed → cancel pending wiring state
-        this.pendingFrom.set(null);
-      }
-    }
-    this.invalidatePaths();
-  }
-
-
-  // Center rails horizontally in the panel container
-  //It returns how many pixels from the left side the rails should be placed so they appear perfectly centered in the panel.
-  //This function ensures the rail system always stays in the middle, even when the browser is resized.tells from where the rail should start from left
-
-  //getRailLeft() gives the X-coordinate where your rails start, so they are centered in the panel.
-  // Example: If panel width is 1000px and rail width is 640px, then:
-  // (1000 - 640) / 2 = 180px
-  // railLeft = 180
-  // → Your rails begin 180px from the left side of screen.
-
-  private getRailLeft(): number {
-    const el = this.panelRef?.nativeElement;
-    if (!el) return 0; //if panel does not exist, return
-    const width = el.clientWidth; //Measures the panel’s current width in pixels.
-    return Math.max(0, Math.floor((width - this.RAIL_WIDTH) / 2));
-  }
-
-
-
-  // =============== Drag from toolbox into panel ==============================
-  onStartDragToolbox(pt: PartType, ev: MouseEvent) {
-    if (this.locked()) return;
-
-    const panelRect = this.panelRef.nativeElement.getBoundingClientRect();
-
-    // const ghost = document.createElement('div');
-    // ghost.className = 'drag-ghost';
-    // ghost.style.width = `${pt.w}px`;
-    // ghost.style.height = `${pt.h}px`;
-    // // ghost.innerHTML = `<span>${pt.label}</span>`;
-    // document.body.appendChild(ghost);
-
-    this.isDragging.set(true);
-    this.hoverRailIndex.set(null);
-    this.preview.set(null);
-
-    //Wile dragging from sidebar to place on the rail
-    const onMove = (e: MouseEvent) => {
-      // ghost.style.left = `${e.pageX}px`;
-      // ghost.style.top = `${e.pageY}px`;
-      //e.pageX/Y is the mouse coordinates .Mouse X position inside the full webpage. Ignores scrolling
-
-      const mx = e.clientX, my = e.clientY;
-      //clientX is Mouse X position inside the visible browser window (viewport).Ignores scrolling
-      const inside =
-        mx >= panelRect.left && mx <= panelRect.right &&
-        my >= panelRect.top && my <= panelRect.bottom;
-      //inside checks if mouse is inside panel area
-      if (inside) {
-        const relY = my - panelRect.top;
-        let railIdx = 0, best = Infinity;
-        this.railsTop().forEach((ry, i) => {
-          const d = Math.abs(relY - ry); //vertical distance between mouse and that rail
-          if (d < best) { best = d; railIdx = i; }
-        }); //find the closest rail 
-
-        this.hoverRailIndex.set(railIdx); //set the rail onw which the ghost component needs to be highlighted
-
-        const railLeft = this.getRailLeft();//getRailLeft() tells how many pixels from the left side of the panel the rails start, so that they’re centered horizontally.
-        const localXRaw = mx - panelRect.left - railLeft - pt.w / 2;//the X-coordinate (horizontal position) where the system thinks the component would be placed on the rail before any corrections like clamping or snapping are applied.
-        const boundedX = Math.max(0, Math.min(this.RAIL_WIDTH - pt.w, localXRaw)); //This just makes sure the part does not go outside the rail.
-        const snappedX = Math.round(boundedX / this.GRID) * this.GRID;
-        //snappedX = “the final X position of the part on this rail, aligned to the grid.”
-        this.preview.set({ x: snappedX, w: pt.w, h: pt.h, railIndex: railIdx, images: pt.imagePath }); //This updates your preview ghost while dragging:
-      } else {
-        this.hoverRailIndex.set(null);
-        this.preview.set(null);
-        // If the mouse is outside the panel:
-        // hoverRailIndex = null → no rail is highlighted.
-        // preview = null → hide the ghost.
-      }
-    };
-
-    //After droppping in the rail
-    const onUp = (e: MouseEvent) => {
-      document.removeEventListener('mousemove', onMove);
-      document.removeEventListener('mouseup', onUp);
-
-      const mx = e.clientX, my = e.clientY;
-      const inside =
-        mx >= panelRect.left && mx <= panelRect.right &&
-        my >= panelRect.top && my <= panelRect.bottom;
-
-      //inside checks if component is inside panel
-      if (inside) {
-        const pv = this.preview(); //if preview (ghost preview) exist
-        if (pv) {
-          this.placePart(pt, pv.railIndex, pv.x); //place part there by checking collission
-        } else {
-          //if no preview recalculate nearest rail to drop point
-          const relY = my - panelRect.top;
-          let railIdx = 0, best = Infinity;
-          this.railsTop().forEach((ry, i) => {
-            const d = Math.abs(relY - ry);
-            if (d < best) { best = d; railIdx = i; }
-          });
-          const railLeft = this.getRailLeft();
-          const localX = mx - panelRect.left - railLeft - pt.w / 2;
-          this.placePart(pt, railIdx, localX);
-        }
-      }
-
-      //ghost.remove(); //removing preview. remove is an inbuilt function
-      this.isDragging.set(false);
-      this.hoverRailIndex.set(null);
-      this.preview.set(null);
-    };
-
-    document.addEventListener('mousemove', onMove);
-    document.addEventListener('mouseup', onUp);
-  }
-
-
-  //It is called when you release the mouse after dragging a toolbox item into the panel.
-  //In other words:This function actually creates the component in your layout.Everything before this was only visual preview.
-
-  private placePart(pt: PartType, railIndex: number, x: number) {
-    const boundedX = Math.max(0, Math.min(this.RAIL_WIDTH - pt.w, x)); //boundedX make sure the component stays fully inside the rail horizontally.if too far bind to max lenght of rail and if too low bind to minimum
-    const snappedX = Math.round(boundedX / this.GRID) * this.GRID;
-    //snappedx Shift the X position to the nearest 5px step so components line up nicely.
-    const y = -pt.h / 2; //Place the component so the rail runs through its center.”
-
-    if (this.collides({ x: snappedX, y, w: pt.w, h: pt.h }, railIndex, null)) return;
-
-    const id = crypto.randomUUID(); //id for the part
-    const part: PlacedPart = {
-      id,
-      type: pt.type,
-      label: pt.label,
-      w: pt.w,
-      h: pt.h,
-      railIndex,
-      x: snappedX,
-      y,
-      imagePath: pt.imagePath,
-      volt: pt.volt,
-      price: pt.price,
-      disabled: false
-
-    };
-    this.parts.update(list => [...list, part]); //list of placed part
-    this.totalProductPrice.update(val => val + pt.price)
-  }
-
-
   //Dragging the part inside the rail
   // =============== Drag inside panel (horizontal-only; can change rail) =====
-  onPartMouseDown(e: MouseEvent, partId: string) {
-    if (this.locked()) return;
+  onPartMouseDown(e: MouseEvent, partId: string, isFixed:boolean) {
+
+    if (this.locked() || isFixed) return;
     e.stopPropagation();
 
     const parts = this.parts();
@@ -596,10 +395,20 @@ export class PanelDesignerComponent implements AfterViewInit {
       // Pick nearest rail under the cursor
       const mouseRelY = ev.clientY - panelRect.top;
       let railIdx = 0, best = Infinity;
-      this.railsTop().forEach((ry, i) => {
-        const d = Math.abs(mouseRelY - ry);
-        if (d < best) { best = d; railIdx = i; }
-      });
+      
+
+      let  usabelRails = this.railsTop().filter((item,index) => this.railsTop().length -1 !== index)
+        
+        usabelRails.forEach((ry, i) => {
+            const d = Math.abs(mouseRelY - ry); //vertical distance between mouse and that rail
+            if (d < best) { best = d; railIdx = i; }
+        }); //find the closest rail 
+
+
+      // this.railsTop().forEach((ry, i) => {
+      //   const d = Math.abs(mouseRelY - ry);
+      //   if (d < best) { best = d; railIdx = i; }
+      // });
       this.hoverRailIndex.set(railIdx);//finding the nearest rail index
 
       const candX = startPart.x + dx;
@@ -621,7 +430,7 @@ export class PanelDesignerComponent implements AfterViewInit {
 
       const now = this.parts()[idx];
       //check if collision. if collides returns to its original position
-      if (this.collides({ x: now.x, y: -now.h / 2, w: now.w, h: now.h }, now.railIndex, now.id)) {
+      if (this.commonService.collides({ x: now.x, y: -now.h / 2, w: now.w, h: now.h }, now.railIndex, now.id)) {
         const temp = [...this.parts()];
         temp[idx] = startPart; // revert
         this.parts.set(temp);
@@ -638,52 +447,11 @@ export class PanelDesignerComponent implements AfterViewInit {
   }
 
 
-
-
-  // =============== Finalize / unlock ========================================
-  finalizeLayout() {
-    this.selectedPart = null
-
-    this.connectionFromPartDetails = ''
-    this.connectionFromPortDetails = ''
-    this.connectionToPartDetails = ''
-    this.connectionToPortDetails = ''
-
-    this.parts().forEach(p => {
-      p.disabled = false;
-    })
-
-     this.pendingFrom.set(null);
-    //this.isDesignMode.set(false);
-    if (this.locked()) return;
-
-    const yes = window.confirm('Are you sure the design is final? You will not be able to move components.');
-    if (yes) this.locked.set(true);
-
-  }
-
-  unfinalizeLayout() {
-    this.selectedPart = null 
-
-    this.connectionFromPartDetails = ''
-    this.connectionFromPortDetails = ''
-    this.connectionToPartDetails = ''
-    this.connectionToPortDetails = ''
-
-     this.pendingFrom.set(null);
-
-    this.parts().forEach(p => {
-      p.disabled = false;
-    })
-    const yes = window.confirm('Unlock layout for editing? Connections remain but movement is enabled.');
-
-    if (yes) this.locked.set(false);
-  }
-
   // =============== Connectors & connections =================================
   //Meaning:When the user clicks “Finalize Layout” → locked = true; connectors become visible
   // When layout is not finalized (locked = false) → connectors are hidden
-  showConnectors() { return this.locked(); }
+  showConnectors() { 
+    return this.locked(); }
 
   /** Connector dot position INSIDE the component (centered horizontally on top/bottom) */
   connectorStyle(p: PlacedPart, port: Port) {
@@ -701,6 +469,8 @@ export class PanelDesignerComponent implements AfterViewInit {
     };
   }
 
+
+
   //Remembers the first clicked connector (start point). Waits for the second click (end point) . Creates a Connection between those two points. Prevents self-connection (same part → ignored). Picks a color for the wire (based on source port). Clears the pending state after connection
 
   //call this when a connector is clicked
@@ -709,35 +479,32 @@ export class PanelDesignerComponent implements AfterViewInit {
     let newObject;
     const from = this.pendingFrom();//starting connection point
     const here: ConnectorRef = { partId, port };
-    this.selectedPart = { id: here.partId, port: port }
-    // console.log('from inside clickConnector:',from);
-    // console.log('here insdie clickConnector:',here)
-    //we get the value always in this 'here'
-    console.log('connections:', this.connections())
-
-
-
+    this.selectedPart.set({ id: here.partId, port: port })
     //work only on ON FIRST CLICK  
     if (!from) {
-
-      this.connectionFromPartDetails = ''
-      this.connectionFromPortDetails = ''
-      this.connectionToPartDetails = ''
-      this.connectionToPortDetails = ''
+      this.connectionFromPartDetails.set('')
+      this.connectionFromPortDetails.set('')
+      this.connectionToPartDetails.set('')
+      this.connectionToPortDetails.set('')
 
       this.pendingFrom.set(here);
 
       const part1 = this.parts().find(p => p.id == partId);
-      this.connectionFromPartDetails = (part1!.label + ' ' + part1!.volt) || ''
-      this.connectionFromPortDetails = port[0].toLocaleUpperCase() + port.slice(1,);;
-      console.log('from part:', this.connectionFromPartDetails)
-      console.log('from port:', this.connectionFromPortDetails)
+      this.part1Phase = part1!.phase //phase means 3p or 1p
+
+      this.connectionFromPartDetails.set((part1!.label + ' ' + part1!.volt) || '')
+      this.connectionFromPortDetails.set(port[0].toLocaleUpperCase() + port.slice(1,))
+
 
       this.parts().forEach(p => {
+        //for its own opposite port connector
         if (p.id === partId) {
           p.disabled = true;
         }
-
+        if (p.id != partId && this.part1Phase < p.phase) {
+          p.disabled = true
+        }
+        //for other components
         this.connections().forEach(c => {
           if (p.id != partId && ((p.id == c.to.partId && partId == c.from.partId) || (p.id == c.from.partId && partId == c.to.partId))) {
             p.disabled = true;
@@ -749,51 +516,60 @@ export class PanelDesignerComponent implements AfterViewInit {
 
     //work only on second click(disabling)
     if (from) {
-      this.selectedPart = null;
+      this.selectedPart.set(null);
+      this.portPosition.set(here.port)
+
       const part2 = this.parts().find(p => p.id == partId);
+    
+      this.part2Phase = part2!.phase
+
       if (from.partId == here.partId) {
         this.pendingFrom.set(null);
         return
       }
+
       this.parts().forEach(p => {
         p.disabled = false;
+        
       })
-      console.log('second click')
-      this.connectionToPartDetails = (part2!.label + ' ' + part2!.volt) || ''
-      this.connectionToPortDetails = port[0].toLocaleUpperCase() + port.slice(1,);
+
+      this.connectionToPartDetails.set((part2!.label + ' ' + part2!.volt) || '')
+      this.connectionToPortDetails.set(port[0].toLocaleUpperCase() + port.slice(1,));
 
     }
 
     // No self-connection
     if (from.partId === here.partId) {
-      console.log('no connection self')
       this.pendingFrom.set(null);
       return;
     }
 
-    //rule
+
+    //ruleS
     if (from.partId && here.partId) {
-      // const foundFromPartId = this.newArrayofConnections().find(obj => obj.fromPartId === from.partId);
-      // const foundToPartId = this.newArrayofConnections().find(obj=> obj.toPartId == here.partId);
-      // const foundFromPartId = this.newArrayofConnections().find(obj => obj.fromPartId === from.partId || obj.fromPartId == here.partId);
-      // const foundToPartId = this.newArrayofConnections().find(obj=> (obj.toPartId == here.partId || obj.toPartId == from.partId) && (obj.toPartId!=foundFromPartId?.fromPartId));
 
-      // console.log('foudnFromPart:',foundFromPartId?.fromPartId); //INITIALLY EMPTY SINCE NO WIRES ARE ADDED
-      //console.log('foudnFromPort:',foundFromPort);
-      // console.log('foudntoPartId:',foundToPartId?.toPartId); //INITIALLY EMPTY SINCE NO WIRES ARE ADDED
+      const checkExisting = this.commonService.newArrayofConnections().find(obj => (obj.fromPartId == from.partId && obj.toPartId == here.partId) || (obj.fromPartId == here.partId && obj.toPartId == from.partId))
 
-      const checkExisting = this.newArrayofConnections().find(obj => (obj.fromPartId == from.partId && obj.toPartId == here.partId) || (obj.fromPartId == here.partId && obj.toPartId == from.partId))
+      //no connection between 1 phase to 3 phase
+      if (this.part1Phase < this.part2Phase) {
+        this.pendingFrom.set(null);
+        return
+      }
 
-      console.log('checkExsitingh:', checkExisting);
+      //popup needed here (connection btw 3p to 1p)
+      if (this.part1Phase > this.part2Phase) {
+        //ask popup
+        this.openDialog(here.partId) //Id of the second component
+      }
 
+      //connection already exist
       if (checkExisting) {
         console.log('no connection RULE')
         this.pendingFrom.set(null);
-        console.log('newconnection:', this.newArrayofConnections())
         return;
       }
-      // foundObject will be { id: 2, name: 'Beta' } or undefined if not found;
-      console.log('newconnection:', this.newArrayofConnections())
+      
+
     }
 
     const color = this.getOrAssignColor(from.partId, from.port);
@@ -804,7 +580,7 @@ export class PanelDesignerComponent implements AfterViewInit {
       color,
       manual: false
     };
-
+    console.log('conn:',conn)
     //set the connection id
     this.connections.update(list => [...list, conn]);
 
@@ -816,38 +592,40 @@ export class PanelDesignerComponent implements AfterViewInit {
       connectionId: conn.id
     };
 
-    this.newArrayofConnections.update(prev => [...prev, newObject]);
+    this.commonService.newArrayofConnections.update(prev => [...prev, newObject]);
 
     this.pendingFrom.set(null); //next connection
   }
 
 
-  // Only X-axis overlap matters because all boxes are centered vertically on the rail
-  //collides() checks whether a new component you are trying to place overlaps (collides) horizontally with any existing component on the same rail.
-  private collides(r: { x: number; y: number; w: number; h: number }, railIndex: number, ignoreId: string | null): boolean {
-    const list = this.parts().filter(p => p.railIndex === railIndex && p.id !== ignoreId);
-    return list.some(p => r.x < p.x + p.w && r.x + r.w > p.x);
-    //returns a boolean to check if collisoin occurs
-  }
-
   railStyle(i: number) {
-    return {
-      left: `${this.getRailLeft()}px`,
+    this.lastIndex = i;
+    if(i== this.railsTop().length-1){
+        return {
+      left: `${this.commonService.getRailLeft()}px`,
       width: `${this.RAIL_WIDTH}px`,
       top: `${this.railsTop()[i]}px`,
       height: `${this.RAIL_BLOCK_THICK}px`,
-
-      // backgroundImage: `url(${'assets/DIN-Rail.png'})`,
-      // backgroundSize: '100% 100%',  // MAKES IMAGE MATCH DIV WIDTH & HEIGHT
-      // backgroundRepeat: 'no-repeat',
-      // backgroundPosition:'center',
-      //width:`${640}px`,
-
-      // backgroundSize: 'cover',
-      // backgroundRepeat: 'no-repeat',
-      // backgroundPosition: 'center',
+    };
+    }
+    return {
+      left: `${this.commonService.getRailLeft()}px`,
+      width: `${this.RAIL_WIDTH}px`,
+      top: `${this.railsTop()[i]}px`,
+      height: `${this.RAIL_BLOCK_THICK}px`,
     };
   }
+
+  //   externalSourceStyle() {
+  //   return {
+  //     left: `${this.commonService.getRailLeft()}px`,
+  //    // width: `${this.RAIL_WIDTH}px`,
+  //     top: `${this.commonService.lastIndex() + 160}px`,
+  //     // height: `${this.RAIL_BLOCK_THICK}px`,
+    
+  //   };
+  // }
+
 
   //specifies height to panel
   panelStyle() {
@@ -857,11 +635,16 @@ export class PanelDesignerComponent implements AfterViewInit {
   //When you click anywhere on the empty panel area (not on connectors, not on components), this function is executed: If you clicked one connector (first click of wiring) But changed your mind or misclicked. Clicking the empty panel cancels the wire creation
   onPanelClick() {
     //to unselect the connections
-    this.connectionFromPartDetails = ''
-    this.connectionFromPortDetails = ''
-    this.connectionToPartDetails = ''
-    this.connectionToPortDetails = ''
-    this.selectedPart = null
+    this.connectionFromPartDetails.set('')
+    this.connectionFromPortDetails.set('')
+    this.connectionToPartDetails.set('')
+    this.connectionToPortDetails.set('')
+    this.selectedPart.set(null)
+    this.isDeleted.set(false)
+    this.deletingPartId.set('')
+    this.commonService.deletedPartItem.set(null)
+
+    this.commonService.deletePartId.set('');
 
     this.parts().forEach(p => {
       p.disabled = false
@@ -874,7 +657,7 @@ export class PanelDesignerComponent implements AfterViewInit {
   /** Build absolute panel-space rect for a part (including rail offset + centering) */
   //It computes the exact X, Y, width, and height of a component/elemenet in the SVG/panel space.
   private partRectAbs(p: PlacedPart): Rect {
-    const railLeft = this.getRailLeft();//This gets the X position where rails start on the panel (centered).
+    const railLeft = this.commonService.getRailLeft();//This gets the X position where rails start on the panel (centered).
     const railY = this.railsTop()[p.railIndex]; //railsTop() gives the Y positions of given rail
     return { x: railLeft + p.x, y: railY - p.h / 2, w: p.w, h: p.h };
     //{ x:730, y:370, w:100, h:60 } x is the starting position of the element from the rail and y is the starting position of the element from y and w and h is the width and height of the element
@@ -917,36 +700,6 @@ export class PanelDesignerComponent implements AfterViewInit {
     this.editingConnId.set(conn.id);//set the connection wire which is now manually handled
   }
 
-  //onHandleDown() lets the user drag an individual point of a manual wire, snapping it to grid and updating the wire’s polyline  until the mouse is released
-  //   onHandleDown(connId: string, index: number, ev: MouseEvent) {
-  //     ev.stopPropagation();
-  //     this.dragHandle.set({ connId, index });
-  //     console.log('inside handledown')
-  //     const move = (e: MouseEvent) => {
-  //       const handle = this.dragHandle();
-  //       if (!handle) return;
-
-  //       const conns = this.connections();
-  //       const conn = conns.find(x => x.id === handle.connId);
-  //       if (!conn || !conn.manual || !conn.manualPoints) return;
-
-  //       // Snap movement to grid
-  //       const x = Math.round(e.offsetX / this.ROUTE_STEP) * this.ROUTE_STEP;
-  //       const y = Math.round(e.offsetY / this.ROUTE_STEP) * this.ROUTE_STEP;
-
-  //       conn.manualPoints[handle.index] = { x, y };
-  //       this.connections.set([...conns]); // trigger redraw
-  //     };
-
-  //     const up = () => {
-  //       this.dragHandle.set(null);
-  //       document.removeEventListener('mousemove', move);
-  //       document.removeEventListener('mouseup', up);
-  //     };
-
-  //     document.addEventListener('mousemove', move);
-  //     document.addEventListener('mouseup', up);
-  // }
 
 
   //onWireMouseDown() lets the user drag the entire wire by converting it to a manual path if needed and then shifting all its polyline points as the mouse moves
@@ -1138,7 +891,7 @@ export class PanelDesignerComponent implements AfterViewInit {
     //total usable width of panel for routing
     const width =
       this.panelRef.nativeElement.clientWidth ||
-      this.getRailLeft() + this.RAIL_WIDTH * 2;
+      this.commonService.getRailLeft() + this.RAIL_WIDTH * 2;
 
 
     const height = this.panelHeight();//total height of panel for routing
@@ -1184,7 +937,7 @@ export class PanelDesignerComponent implements AfterViewInit {
       else if (this.isRightmostOnRail(fromPart)) preferredSide = 'right';
     }
 
-    const railLeft = this.getRailLeft(); //start if rail in left side
+    const railLeft = this.commonService.getRailLeft(); //start if rail in left side
     const railRight = railLeft + this.RAIL_WIDTH; //end of rail in right side
 
     //inflate each part by 5px 
@@ -1492,6 +1245,12 @@ Example:45 was reached from 30 → cameFrom.set(45,30).65 was reached from 45 �
   }
 
 
+  onClickDelete(partId: string, ev?: MouseEvent){
+    this.deletingPartId.set(partId)
+    this.isDeleted.set(true)
+    this.commonService.deletePart(partId, ev)
+  
+  }
   //deleting a component
   onDeletePart(partId: string, ev?: MouseEvent) {
     ev?.stopPropagation();
@@ -1505,8 +1264,8 @@ Example:45 was reached from 30 → cameFrom.set(45,30).65 was reached from 45 �
     //set parts to remaining parts
     this.parts.set(remainingParts);
 
-    const remainingConnections = this.newArrayofConnections().filter(p => (p.fromPartId != partId) || (p.toPartId != partId))
-    this.newArrayofConnections.set(remainingConnections)
+    const remainingConnections = this.commonService.newArrayofConnections().filter(p => (p.fromPartId != partId) || (p.toPartId != partId))
+    this.commonService.newArrayofConnections.set(remainingConnections)
     // remove any wires referencing this part
     const keepIds = new Set(remainingParts.map(p => p.id)); //ids of remaining parts
 
@@ -1515,15 +1274,15 @@ Example:45 was reached from 30 → cameFrom.set(45,30).65 was reached from 45 �
     ); //filter only the required connection
 
     //remove the colors
-    this.portColors.delete(this.portKey(partId, 'top'));
-    this.portColors.delete(this.portKey(partId, 'bottom'));
+    this.portColors.delete(this.commonService.portKey(partId, 'top'));
+    this.portColors.delete(this.commonService.portKey(partId, 'bottom'));
     //console.log('remaining',remainingParts)
     this.totalProductPrice.update(val => val - (price ?? 0))
     // clear pending if it referenced this part
     const pending = this.pendingFrom();
     if (pending && pending.partId === partId) this.pendingFrom.set(null);
 
-    this.invalidatePaths();
+    this.commonService.invalidatePaths();
   }
 
   //to delete a connection line
@@ -1531,69 +1290,43 @@ Example:45 was reached from 30 → cameFrom.set(45,30).65 was reached from 45 �
     ev?.stopPropagation();
     if (this.locked()) return;  // disable after finalize. cannot delete connection if layout is locked
 
+    const getDeletedConnection = this.connections().find(c => c.id == connId)
+   this.parts().forEach((p=>{
+      if(p.id == getDeletedConnection?.to.partId ){
+        p.disabled = false;
+        if(getDeletedConnection?.to.port == 'top')
+        {
+          p.phasePositionTop = ''
+        }
+         if(getDeletedConnection?.to.port == 'bottom')
+        {
+          p.phasePositionBottom =''
+        }
+        
+        
+      }
+    }))
     this.connections.set(this.connections().filter(c => c.id !== connId)); //filter the connection by removing that connection;
-    const remainingConnections = this.newArrayofConnections().filter(p => p.connectionId != connId)
-    this.newArrayofConnections.set(remainingConnections)
-    this.invalidatePaths();
+    const remainingConnections = this.commonService.newArrayofConnections().filter(p => p.connectionId != connId)
+    this.commonService.newArrayofConnections.set(remainingConnections)
+    this.commonService.invalidatePaths();
   }
 
   //COLOR Assignments
 
   // Map of "<partId>:<port>" -> color
-  private portColors = new Map<string, string>(); //A Map that stores which color is assigned to each connector port.
+  //private portColors = new Map<string, string>(); //A Map that stores which color is assigned to each connector port.
 
-  /*It creates a unique key string for a connector port.
-  Example:
-  portKey("mcb_123", "top")  →  "mcb_123:top"
-  portKey("rcd_55", "bottom") → "rcd_55:bottom" */
-
-  private portKey(partId: string, port: Port) {
-    return `${partId}:${port}`;
-  }
-
-  //assign color to wires
-  // private getOrAssignColor(partId: string, port: Port): string {
-  //   const key = this.portKey(partId, port);
-  //   const existing = this.portColors.get(key);
-  //   if (existing) return existing;
-
-  //   // Avoid colors already used by any other port, and avoid sibling port color
-  //   const used = new Set(this.portColors.values());
-  //   const sibling = this.portColors.get(this.portKey(partId, port === 'top' ? 'bottom' : 'top'));
-
-  //   let chosen: string | null = null;
-  //   // try a full pass over the palette starting at colorIndex
-  //   for (let i = 0; i < this.colorCycle.length * 2; i++) {
-  //     const idx = (this.colorIndex + i) % this.colorCycle.length;
-  //     const c = this.colorCycle[idx];
-  //     if (!used.has(c) && c !== sibling) {
-  //       chosen = c;
-  //       this.colorIndex = idx + 1; // advance index only when we pick
-  //       break;
-  //     }
-  //   }
-  //   // Fallback: still avoid sibling if possible
-  //   if (!chosen) {
-  //     for (let i = 0; i < this.colorCycle.length; i++) {
-  //       const c = this.colorCycle[i];
-  //       if (c !== sibling) { chosen = c; this.colorIndex = i + 1; break; }
-  //     }
-  //   }
-  //   // Last resort: just pick next (palette exhausted)
-  //   if (!chosen) {
-  //     chosen = this.colorCycle[this.colorIndex % this.colorCycle.length];
-  //     this.colorIndex++;
-  //   }
-
-  //   this.portColors.set(key, chosen);
-  //   return chosen;
+  // private portKey(partId: string, port: Port) {
+  //   return `${partId}:${port}`;
   // }
+
   private getOrAssignColor(partId: string, port: Port): string {
-    const key = this.portKey(partId, port);//  "mcb_123:top / partid:port"
+    const key = this.commonService.portKey(partId, port);//  "mcb_123:top / partid:port"
     const existing = this.portColors.get(key);//same port of a connector gets a different color
     if (existing) return existing;
 
-    const siblingKey = this.portKey(partId, port === 'top' ? 'bottom' : 'top');
+    const siblingKey = this.commonService.portKey(partId, port === 'top' ? 'bottom' : 'top');
     const sibling = this.portColors.get(siblingKey);
     //We read the sibling’s color so we can avoid giving that same color here.
     //if top is current port, then bottom port is sibling
@@ -1629,24 +1362,6 @@ Example:45 was reached from 30 → cameFrom.set(45,30).65 was reached from 45 �
     this.portColors.set(key, chosen); // add 
     return chosen;
   }
-
-
-  // Remove color entries for parts that no longer exist
-  //portColors has this key value pair
-  //key: "552a6e27-b916-4018-a7c7-0df4646d5107:bottom"
-  //value: "#eb0d0dff"
-  private prunePortColors(keepIds: Set<string>) {
-    for (const k of Array.from(this.portColors.keys())) {
-      const [pid] = k.split(':', 1); //get the component id
-      if (!keepIds.has(pid)) {
-        //if the component does not exist
-        this.portColors.delete(k) //delete that key which deletes the value also
-      };
-    }
-  }
-
-
-
 
 
 }

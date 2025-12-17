@@ -1,4 +1,4 @@
-  <!-- <div class="toolbox no-select" [class.disabled]="locked()">
+  <div class="toolbox no-select" [class.disabled]="locked()">
     
     <div class="tool-title">
       <pre>Component  Library</pre>
@@ -16,9 +16,9 @@
           [style.--h.px]="t.h"
           [title]="t.label + ' '+ t.volt + ' ('+t.w+'x'+t.h+')'">
           <img [src]="t.imagePath" style="max-height:80px">
-          </div>
+        </div>
 
-          <div class="img-desc">
+        <div class="img-desc">
             <div class="desc-container">
               @if(t.volt){
                 <h6>{{t.label}} | {{ t.volt}}</h6>
@@ -28,13 +28,12 @@
               }
               <p>{{t.part_number}}</p>
               <p>{{t.description}}</p>
+              <p style="color:#09a5dd">{{t.phase}} Phase</p>
               <p style="color:#09a5dd"><b>{{t.price}} DKK</b></p>
             </div>
-          </div>
+        </div>
       </div>
-        
-        
     </div>
 
     
-  </div> -->
+  </div>

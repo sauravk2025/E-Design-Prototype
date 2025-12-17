@@ -15,7 +15,9 @@ export interface PartType {
   imagePath: string;
   description: string;
   price: number;
-  part_number: string
+  part_number: string;
+  phase:number
+  
 
 } //for each component
 
@@ -34,6 +36,10 @@ export interface PlacedPart {
   volt: string,
   price: number,
   disabled: boolean
+  phase : number
+  phasePositionTop:string;
+  phasePositionBottom:string;
+  isFixed:boolean
 }
 
 export interface ConnectorRef {
@@ -49,3 +55,4 @@ export interface Connection {
   manual: boolean;        // manual wire adjustment or not? TRue when mouseclicked once
   manualPoints?: Pt[];    // The stored polyline in panel coordinates by user
 }
+

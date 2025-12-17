@@ -1,53 +1,8 @@
-
 <app-header></app-header>
-
 
 <div class="wrap">
 <!--Side Bar-->
-<!-- <app-component-library></app-component-library> -->
-  <div class="toolbox no-select" [class.disabled]="locked()">
-    
-    <div class="tool-title">
-      <pre>Component  Library</pre>
-    </div>
-
-    <div class="hint" *ngIf="!locked()"><p>Drag a component into a rail</p></div>
-    <div class="hint" *ngIf="locked()"><p>Locked: connections only</p></div>
-    
-    <div class="toolbox-body">
-      <div class="tool-container" *ngFor="let t of toolbox" (mousedown)="onStartDragToolbox(t, $event)">
-        <div
-          class="tool"
-          (mousedown)="onStartDragToolbox(t, $event)"
-          [style.--w.px]="t.w"
-          [style.--h.px]="t.h"
-          [title]="t.label + ' '+ t.volt + ' ('+t.w+'x'+t.h+')'">
-          <img [src]="t.imagePath" style="max-height:80px">
-            <!-- <div class="tool-icon">{{ t.label }}</div>
-            <div class="tool-meta">{{ t.w }}×{{ t.h }}</div> -->
-          </div>
-
-          <div class="img-desc">
-            <div class="desc-container">
-              @if(t.volt){
-                <h6>{{t.label}} | {{ t.volt}}</h6>
-              }
-              @else{
-                <h6>{{t.label}}</h6>
-              }
-              <p>{{t.part_number}}</p>
-              <p>{{t.description}}</p>
-              <p style="color:#09a5dd"><b>{{t.price}} DKK</b></p>
-            </div>
-          </div>
-      </div>
-        
-        
-    </div>
-
-    <!-- <div class="hint" *ngIf="!locked()">Drag a component into a rail →</div> -->
-    
-  </div>
+  <app-component-library></app-component-library>
 
   <!-- Panel -->
   <!-- <div #panelRef class="panel" [ngStyle]="panelStyle()" (mousedown)="onPanelClick()"> -->
@@ -55,7 +10,7 @@
     <!-- <img src="assets/cabinet.png"> -->
     <div class="grid"></div> <!--background grid like -->
 
-    <!--<svg class="wires" -creates an SVG drawing surface on top of your panel where all wires are drawn.-->
+    <!--<svg class="wires" - creates an SVG drawing surface on top of your panel where all wires are drawn.-->
     <svg class="wires"
       [attr.width]="'100%'"
       [attr.height]="panelHeight()"
@@ -77,7 +32,6 @@
           class="wire-item"
         />
       </ng-container>
-
     </svg>
     
     <!-- Rails (0-height lines) -->
@@ -86,14 +40,22 @@
       *ngFor="let r of railsTop(); index as i"
       [ngStyle]="railStyle(i)"
       [class.highlight]="hoverRailIndex() === i && isDragging()"
+  
     >
-      <img src="assets/DIN-Rail-Used-2.png" class="rail-image" style="width: 992px;height: 250px;" >
+    
+    @if(i== railsTop().length-1){
+      <img src="assets/DIN-Rail-Used-2.png" class="rail-image" style="width: 970px;height: 220px; opacity: 0.1;" >
+    }
+    @else {
+      <img src="assets/DIN-Rail-Used-2.png" class="rail-image" style="width: 970px;height: 220px;" >
+    }
+    <!-- <img src="assets/DIN-Rail-Used-2.png" class="rail-image" style="width: 970px;height: 220px;" >  -->
           
       <!--width: 702px; scale-factor : 3-->
       <!-- <div class="rail-title">Rail {{ i + 1 }}</div> -->
 
         <!-- Drop preview (if you kept it) -->
-          <div
+        <div
           class="drop-preview"
           *ngIf="preview() && preview()!.railIndex === i"
           [style.left.px]="preview()!.x"
@@ -106,26 +68,35 @@
 
         <!-- Parts on this rail -->
          <!--incorrect comments-->
-          <ng-container *ngFor="let p of parts()">
-              <div
+        <ng-container *ngFor="let p of parts()">
+            <div
                 *ngIf="p.railIndex === i"
                 class="part"
                 [class.locked]="locked()"
-                [class.dragging]="draggingPartId() === p.id && isDragging()"
+                [class.dragging]="draggingPartId() === p.id && isDragging() && !locked()"
+                [class.delete]="deletingPartId() == p.id && isDeleted() && !locked()"
                 [style.left.px]="p.x"
                 [style.top.px]="-p.h/2"  
                 [style.width.px]="p.w"
                 [style.height.px]="p.h"
-                 [title]="p.label + ' '+ p.volt  +' ('+p.w+'x'+p.h+')'"
-                (mousedown)="onPartMouseDown($event, p.id)"
-                (dblclick)="onDeletePart(p.id, $event)"
+                [title]="p.label + ' '+ p.volt  +' ('+p.w+'x'+p.h+')'"
+                (mousedown)="onPartMouseDown($event, p.id,p.isFixed)"
+                (click)="locked() || p.isFixed  ?'': onClickDelete(p.id,$event)"
+               
               >
                 <!-- <div class="part-label">{{ p.label }}</div> -->
-              <img [src]="p.imagePath" style="width: 100%; height: 100%;" class="box-shadow">
+              <img [src]="p.imagePath" style="width: 100%; height: 100%;"  [class.boxShadow]="p.id != draggingPartId() && deletingPartId() != p.id ">
+
+              @if(p.phasePositionBottom){
+               <span class="phaseFromBottom">{{p.phasePositionBottom}}</span> 
+              }
+              @if(p.phasePositionTop){
+               <span class="phaseFromTop">{{p.phasePositionTop}}</span> 
+              }
                 <!-- Connectors (visible only when locked) -->
                 <button
                   *ngIf="showConnectors()"
-                  [class]="selectedPart?.id === p.id && selectedPart?.port === 'top' ? 'selected-connector' : p.disabled ? 'rule-connector':'connector'"
+                  [class]="selectedPart()?.id === p.id && selectedPart()?.port === 'top' ? 'selected-connector' : p.disabled ? 'rule-connector':'connector'"
                   [ngStyle]="connectorStyle(p, 'top')"
                   (mousedown)="$event.stopPropagation()"
                   (click)="onClickConnector(p.id, 'top')"
@@ -133,114 +104,55 @@
                   [disabled]="p.disabled"
                 ></button>
 
+                @if(!p.isFixed){
+                  <button
+                    *ngIf="showConnectors()"
+                    [class]="selectedPart()?.id === p.id && selectedPart()?.port === 'bottom' ? 'selected-connector' : p.disabled ? 'rule-connector':'connector'"
+                    [ngStyle]="connectorStyle(p, 'bottom')"
+                    (mousedown)="$event.stopPropagation()"
+                    (click)="onClickConnector(p.id, 'bottom')"
+                    title="Bottom connector"
+                    [disabled]="p.disabled"
+                  ></button>
+                }
+                
+            </div>
+           
+          </ng-container>
+        </div>
+
+        <!-- <div 
+        [ngStyle]="externalSourceStyle()" 
+        class="externalSource"
+        style="background-color: red;">
+          <img src="../../assets/AS-1P+N-10A.png" height="130px" width="80" title="externalSupplyBox">
+          <button
+                  *ngIf="showConnectors()"
+                  [class]="'connector'"
+                  [ngStyle]="connectorStyle(test()!, 'top')"
+                  (mousedown)="$event.stopPropagation()"
+                  (click)="onClickConnector(test()!.id, 'top')"
+                  title="Top connector"
+                ></button>
+
                 <button
                   *ngIf="showConnectors()"
-                  [class]="selectedPart?.id === p.id && selectedPart?.port === 'bottom' ? 'selected-connector' : p.disabled ? 'rule-connector':'connector'"
-                  [ngStyle]="connectorStyle(p, 'bottom')"
+                  [class]="'connector'"
+                  [ngStyle]="connectorStyle(test()!, 'bottom')"
                   (mousedown)="$event.stopPropagation()"
-                  (click)="onClickConnector(p.id, 'bottom')"
+                  (click)="onClickConnector(test()!.id, 'bottom')"
                   title="Bottom connector"
-                  [disabled]="p.disabled"
+          
                 ></button>
-            </div>
-          </ng-container>
-    
-    
-    </div>
 
+        </div> -->
   </div>
 
-  <div class="right-sidebar no-select ">
-    
-      <div class="tool-title">
-            <pre>Panel Controls</pre>
-      </div>
-
-    <div class="right-sidebar-body">
-    
-      <div class="right-sidebar-body-p1">
-          <div class="mode-text-button">
-            <p>Current Mode</p>
-            <button><h3>{{!locked() ?'Design Mode':'Connection Mode'}}</h3></button>
-          </div>
-
-          <div class="rails-picker">
-              <label>
-                  <p>Number of Rails</p>
-              </label>
-              <select
-                [value]="railsCount()"
-                (change)="setRailsCount(+$any($event.target).value)"
-                [disabled]="locked()"
-                title="{{ locked() ? 'Unlock to change rail count' : 'Change rail count' }}"
-              >
-                <option *ngFor="let n of [1,2,3,4]" [value]="n">{{n}}</option>
-              </select>
-              <div class="fixed-stats">
-                <p >Single Rail : 1500 DKK</p>
-                <p >Additional Rails : 750 DKK</p>
-              </div>
-          </div>
-
-        
-
-          <div class="dynamic-stats">
-            <div class="stats-boxes">
-              <h3>{{parts().length}}</h3>
-              <p>Components</p>
-            </div>
-            <div class="stats-boxes">
-              <h3>{{totalProductPrice()+ totalRailPrice()}} DKK</h3>
-              <p>Total Price</p>
-            </div>
-            
-          </div>
-
-          <!--Dynamically change-->
-          <div class="mode-box">
-            <p>{{!locked() ?'Design Mode':'Connection Mode'}}</p>
-
-            <div class="mode-desc-container">
-                @if(!locked())
-                { <div class="mode-desc" >
-                    <p>Drag components from library to rails.</p>
-                    <p>Components sit on the DIN-Rails.</p>
-                    <p>Components do not overlap.</p>
-                    <p>Click Finalize when ready.</p>
-                   </div>
-                }
-                @else{
-                  <div class="from-to-container">
-                    <p>From</p>
-                    <div class="from-container">
-                      <p>Component : <strong [class]="connectionFromPartDetails ? 'red-color':'no-color'">{{connectionFromPartDetails || 'Not Selected'}}</strong> </p>
-                      <p>Port : <strong [class]="connectionFromPortDetails ? 'red-color':'no-color'">{{connectionFromPortDetails || 'Not Selected'}}</strong></p>
-                    </div>
-                    <p>To</p>
-                    <div class="to-container">
-                      <p>Component :<strong [class]="connectionToPartDetails ? 'blue-color':''">{{connectionToPartDetails || 'Not Selected'}}</strong></p>
-                      <p>Port : <strong [class]="connectionToPortDetails ? 'blue-color':''">{{connectionToPortDetails || 'Not Selected'}}</strong></p>   
-                    </div>
-                  </div>
-                }
-             
-            </div>
-          </div>
-
-        </div>
-
-        <div class="right-sidebar-body-p2">
-          <button (click)="locked() ? unfinalizeLayout() : finalizeLayout()" [ngClass]="{'active':!locked(),
-                      'inactive':locked()
-          }">
-            {{!locked()?'Finalise Design':'Reset & Edit Layout'}}
-          </button>
-          <!-- <button (click)="unfinalizeLayout()" [disabled]="!locked()">Unlock Layout</button> -->
-        </div>
-  </div> 
-</div>
+  <app-panel-controls></app-panel-controls>
 
 </div>
+
+
 
 
 

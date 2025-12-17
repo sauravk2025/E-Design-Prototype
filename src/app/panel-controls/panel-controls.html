@@ -1,0 +1,104 @@
+ <div class="right-sidebar no-select ">
+    
+      <div class="tool-title">
+            <pre>Panel Controls</pre>
+      </div>
+
+    <div class="right-sidebar-body">
+    
+      <div class="right-sidebar-body-p1">
+          <div class="mode-text-button">
+            <p>Current Mode</p>
+            <button><h3>{{!locked() ?'Design Mode':'Connection Mode'}}</h3></button>
+          </div>
+
+          <div class="rails-picker">
+              <label>
+                  <p>Number of Rails</p>
+              </label>
+              <select
+                [value]="railsCount()"
+                (change)="setRailsCount(+$any($event.target).value)"
+                [disabled]="locked()"
+                title="{{ locked() ? 'Unlock to change rail count' : 'Change rail count' }}"
+              >
+                <option *ngFor="let n of [1,2,3,4,5]" [value]="n">{{n}}</option>
+              </select>
+              <div class="fixed-stats">
+                <p >Single Rail : 1500 DKK</p>
+                <p >Additional Rails : 750 DKK</p>
+              </div>
+          </div>
+
+        
+
+          <div class="dynamic-stats">
+            <div class="stats-boxes">
+              <h3>{{parts().length}}</h3>
+              <p>Components</p>
+            </div>
+            <div class="stats-boxes">
+              <h3>{{totalProductPrice()+ totalRailPrice()}} DKK</h3>
+              <p>Total Price</p>
+            </div>
+            
+          </div>
+
+          <!--Dynamically change-->
+          <div class="mode-box">
+            <p>{{!locked() ?'Design Mode':'Connection Mode'}}</p>
+
+            <div class="mode-desc-container">
+                @if(!locked())
+                { <div class="mode-desc" >
+                    <p>Drag components from library to rails.</p>
+                    <p>Components sit on the DIN-Rails.</p>
+                    <p>Components do not overlap.</p>
+                    <p>Click Finalize when ready.</p>
+                    <div class="deletePartText">
+                        @if(getSelectedPart() && getSelectedPartRail()){
+                          <p>Selected {{getSelectedPart()}} on Rail: {{getSelectedPartRail()}}</p>
+                        }
+                        @else{
+                          <p>Select a part to delete</p>
+                        }
+                      </div>
+                   </div>
+                }
+                @else{
+                  <div class="from-to-container">
+                    <p>From</p>
+                    <div class="from-container">
+                      <p>Component : <strong [class]="connectionFromPartDetails() ? 'red-color':'no-color'">{{connectionFromPartDetails()  || 'Not Selected'}}</strong> </p>
+                      <p>Port : <strong [class]="connectionFromPortDetails()  ? 'red-color':'no-color'">{{connectionFromPortDetails()  || 'Not Selected'}}</strong></p>
+                    </div>
+                    <p>To</p>
+                    <div class="to-container">
+                      <p>Component :<strong [class]="connectionToPartDetails()  ? 'blue-color':''">{{connectionToPartDetails()  || 'Not Selected'}}</strong></p>
+                      <p>Port : <strong [class]="connectionToPortDetails()  ? 'blue-color':''">{{connectionToPortDetails()  || 'Not Selected'}}</strong></p>   
+                    </div>
+                  </div>
+                }
+             
+            </div>
+          </div>
+
+        </div>
+
+        <div class="right-sidebar-body-p2">
+
+          <button (click)="!locked() && isDeleted() ? deletePart():'' " 
+          [ngClass]="{'active':!locked() && isDeleted(),'inactive':locked() || !isDeleted()}" >
+          Delete Part
+          </button>
+
+          <button (click)="locked() ? unfinalizeLayout() : finalizeLayout()" 
+          [ngClass]="{'active':!locked(),'inactive':locked()
+          }">
+          {{!locked()?'Finalise Design':'Reset & Edit Layout'}}
+          </button>
+
+          <!-- <button (click)="unfinalizeLayout()" [disabled]="!locked()">Unlock Layout</button> -->
+        </div>
+  </div> 
+</div>
