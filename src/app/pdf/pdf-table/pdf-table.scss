@@ -1,0 +1,14 @@
+table {
+    border-collapse: separate; /* Required for border-spacing to work */
+    border-spacing: 20px 0;    /* 20px horizontal space, 0 vertical space */
+    width: 100%;
+  }
+  th, td {
+    // border: 1px solid black;
+    padding: 5px; /* Adds space inside the cells */
+    text-align: center;
+  }
+
+  th{
+    color: green;
+  }

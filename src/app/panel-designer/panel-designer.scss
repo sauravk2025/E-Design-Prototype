@@ -339,3 +339,14 @@
   user-select: none;
   /* Non-prefixed version, currently supported by Chrome, Edge, Opera and Firefox */
 }
+
+
+.pdf-offscreen{
+  position: fixed;
+  left: -10000px;
+  top: 0;
+  width: 210mm;     // important: stable layout for A4
+  background: white;
+  opacity: 0;       // invisible but still rendered
+  pointer-events: none;
+}

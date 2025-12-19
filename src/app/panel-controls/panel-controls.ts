@@ -52,11 +52,9 @@ export class PanelControls {
     const extrenalSource = this.parts().find(item => item.isFixed);
     if (extrenalSource) {
       const lastRailIdx =this.commonService.railsTop().length - 1;
-      extrenalSource.y = this.commonService.railsTop()[lastRailIdx];
+      extrenalSource.y = this.commonService.railsTop()[lastRailIdx] ;
       extrenalSource.railIndex = lastRailIdx;
       this.parts.update((p) => p.map(item => item.id === extrenalSource.id ? extrenalSource : item))    }
-
-    console.log('parts',this.parts())
 
     // Atomic pruning (parts + wires + pending)
     const keptParts = this.parts().filter(p => p.railIndex < n || p.isFixed);

@@ -22,7 +22,7 @@
                 [disabled]="locked()"
                 title="{{ locked() ? 'Unlock to change rail count' : 'Change rail count' }}"
               >
-                <option *ngFor="let n of [1,2,3,4,5]" [value]="n">{{n}}</option>
+                <option *ngFor="let n of [1,2,3,4]" [value]="n">{{n}}</option>
               </select>
               <div class="fixed-stats">
                 <p >Single Rail : 1500 DKK</p>

@@ -44,7 +44,7 @@
     >
     
     @if(i== railsTop().length-1){
-      <img src="assets/DIN-Rail-Used-2.png" class="rail-image" style="width: 970px;height: 220px; opacity: 0.1;" >
+      <!-- <img src="assets/Plain-Rail.png" class="rail-image" style="width: 820px;height: 100px; opacity: 0.2; position: absolute; left: -70px; top: -35px;" > -->
     }
     @else {
       <img src="assets/DIN-Rail-Used-2.png" class="rail-image" style="width: 970px;height: 220px;" >
@@ -146,6 +146,10 @@
                 ></button>
 
         </div> -->
+        <!-- @if(startDownload()){
+          <app-pdf-table [parts]="parts()" class="pdf-offscreen"></app-pdf-table>
+        } -->
+        <app-pdf-table class="pdf-offscreen"></app-pdf-table>
   </div>
 
   <app-panel-controls></app-panel-controls>

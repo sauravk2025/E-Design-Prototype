@@ -1,5 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { PanelDesignerComponent } from "./panel-designer/panel-designer";
+import { RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'app-root',

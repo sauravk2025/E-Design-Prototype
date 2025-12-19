@@ -35,20 +35,21 @@ export class Common {
   deletePartMouseEvent:MouseEvent|undefined = undefined;
   deletedPartItem = signal<PlacedPart|null>(null);
 
-  
+  startDownload = signal<boolean>(false)
   lastIndex =signal<number>(0);
 
-  
+  pdfTable = signal<any>('');
+
   externalSource:PlacedPart= {
         id:crypto.randomUUID(),
         type:'externalSource',
         label:'externalSource',
-        w: 70,
-        h: 120,
+        w: 100,
+        h: 130,
         railIndex:1,
-        x: 150,
+        x: 70,
         y: 300,
-        imagePath: '',
+        imagePath: 'assets/externalSource5.png',
         volt: '',
         price: 100,
         disabled: false,
@@ -60,11 +61,6 @@ export class Common {
       };
 
   constructor(){
-    effect(()=>{
-      const length = this.railsTop().length
-      this.lastIndex.set(this.railsTop()[length-1])
-      console.log('railsTop:',this.railsTop())
-    })
     this.parts.update((p)=>[...p,this.externalSource])
   }
 
@@ -136,7 +132,7 @@ export class Common {
   
   deleteComponent(){
     if(this.deletePartId() && this.deletePartMouseEvent){
-      console.log('partId:',this.deletePartId() )
+     
        this.deletePartMouseEvent ?.stopPropagation();
       if (this.locked()) return;  // disable after finalize. Cannot delete if layout is locked
       const price = this.parts().find(p => p.id == this.deletePartId() )?.price
@@ -160,7 +156,7 @@ export class Common {
       //remove the colors
       this.portColors.delete(this.portKey(this.deletePartId() , 'top'));
       this.portColors.delete(this.portKey(this.deletePartId() , 'bottom'));
-      //console.log('remaining',remainingParts)
+   
       this.totalProductPrice.update(val => val - (price ?? 0))
       // clear pending if it referenced this part
       const pending = this.pendingFrom();

@@ -19,11 +19,12 @@ import { MAX_RAILS, RAIL_WIDTH, RAIL_SPACING, LAST_BOTTOM_MARGIN, CONNECTOR_SIZE
 import { PanelControls } from "../panel-controls/panel-controls";
 import { MatDialog } from '@angular/material/dialog';
 import { PhaseDialogue } from '../phase-dialogue/phase-dialogue';
+import { PdfTable } from "../pdf/pdf-table/pdf-table";
 
 @Component({
   selector: 'app-panel-designer',
   standalone: true,
-  imports: [CommonModule, Header, ComponentLibrary, PanelControls],
+  imports: [CommonModule, Header, ComponentLibrary, PanelControls, PdfTable],
   templateUrl: './panel-designer.html',
   styleUrls: ['./panel-designer.scss'],
 })
@@ -87,12 +88,13 @@ export class PanelDesignerComponent implements AfterViewInit {
   portPosition = this.commonService.portPosition
   newArrayofConnections = this.commonService.newArrayofConnections
   isDeleted = this.commonService.isDeleted
-
+  startDownload = this.commonService.startDownload
   // newArrayofConnections = signal<{ fromPartId: string, fromPartConnector: string, toPartId: string, toPartConnector: string, connectionId: string }[] | []>([])
   // Visual-only drag state (kept from your version)
   draggingPartId = signal<string | null>(null);//The ID of the component currently being dragged.
   editingConnId = signal<string | null>(null); //The connection (wire) currently being manually edited.
   dragHandle = signal<{ connId: string; index: number } | null>(null); //The specific handle/bend point of the wire the user is dragging.
+
 
   deletingPartId = signal<string>(' ')
   part1Phase: number = 0;
@@ -285,6 +287,7 @@ export class PanelDesignerComponent implements AfterViewInit {
     const panelEl = this.panelRef?.nativeElement;
     this.commonService.panelEl.set(panelEl)
     
+    
     // When railsCount changes, drop parts on removed rails and prune wires/pending.
     //afterViewInit runs only once
 
@@ -328,11 +331,11 @@ export class PanelDesignerComponent implements AfterViewInit {
     });
 
 
-    effect(() => {
-      const conns = this.connections(); // read current connections after any change in the wire connections
-      this.pathCache.clear();
-      this.pathEpoch++;    // not used
-    });
+    // effect(() => {
+    //   const conns = this.connections(); // read current connections after any change in the wire connections
+    //   this.pathCache.clear();
+    //   this.pathEpoch++;    // not used
+    // });
 
 
     // Extra safety: if parts change by any cause, ensure wires valid
@@ -349,21 +352,21 @@ export class PanelDesignerComponent implements AfterViewInit {
 
 
     //dont know if it is ued
-    effect(() => {
-      const snapshot = JSON.stringify({
-        parts: this.parts(),
-        conns: this.connections()
-      });
-      // touching this effect guarantees it runs when either changes
-      // (we only need the side-effect)
-      this.commonService.invalidatePaths();
+    // effect(() => {
+    //   const snapshot = JSON.stringify({
+    //     parts: this.parts(),
+    //     conns: this.connections()
+    //   });
+    //   // touching this effect guarantees it runs when either changes
+    //   // (we only need the side-effect)
+    //   this.commonService.invalidatePaths();
 
-      // Whenever parts change → wires must be rerouted.
+    //   // Whenever parts change → wires must be rerouted.
 
-      // Whenever connections change → wires must be rerouted.
+    //   // Whenever connections change → wires must be rerouted.
 
-      // This effect ensures pathCache is invalidated regardless of which one changed.
-    });
+    //   // This effect ensures pathCache is invalidated regardless of which one changed.
+    // });
 
   }
 
@@ -564,7 +567,7 @@ export class PanelDesignerComponent implements AfterViewInit {
 
       //connection already exist
       if (checkExisting) {
-        console.log('no connection RULE')
+     
         this.pendingFrom.set(null);
         return;
       }
@@ -580,7 +583,7 @@ export class PanelDesignerComponent implements AfterViewInit {
       color,
       manual: false
     };
-    console.log('conn:',conn)
+    
     //set the connection id
     this.connections.update(list => [...list, conn]);
 
@@ -604,7 +607,7 @@ export class PanelDesignerComponent implements AfterViewInit {
         return {
       left: `${this.commonService.getRailLeft()}px`,
       width: `${this.RAIL_WIDTH}px`,
-      top: `${this.railsTop()[i]}px`,
+      top: `${this.railsTop()[i]+5}px`,
       height: `${this.RAIL_BLOCK_THICK}px`,
     };
     }
@@ -1086,8 +1089,7 @@ export class PanelDesignerComponent implements AfterViewInit {
     */
     const s = toCell(start);
     const g = toCell(goal);
-    //console.log('grids of start and end:', s, g)
-
+  
     const inBounds = (cx: number, cy: number) => cx >= 0 && cy >= 0 && cx < cols && cy < rows; //checks if a grid cell is inside the panel It makes sure the router does not go outside your panel area.
     const passable = (cx: number, cy: number) => inBounds(cx, cy) && !blocked[cy * cols + cx]; //– checks if the grid cell is inside AND not blocked
 
@@ -1276,7 +1278,7 @@ Example:45 was reached from 30 → cameFrom.set(45,30).65 was reached from 45 �
     //remove the colors
     this.portColors.delete(this.commonService.portKey(partId, 'top'));
     this.portColors.delete(this.commonService.portKey(partId, 'bottom'));
-    //console.log('remaining',remainingParts)
+
     this.totalProductPrice.update(val => val - (price ?? 0))
     // clear pending if it referenced this part
     const pending = this.pendingFrom();
