@@ -176,7 +176,6 @@ export class Header {
 
   //       // pdf.setFontSize(9);
   //       // pdf.text(`Page ${i} of ${totalPages}`, pageW - margin.right, headerY + 15, { align: 'right' });
-  //       // console.log('i:', i)
   //       // horizontal line under header
   //       // pdf.setLineWidth(0.2);
   //       // pdf.line(

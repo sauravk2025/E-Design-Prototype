@@ -18,7 +18,6 @@ export class PdfTable{
     constructor(){
       effect(()=>{
         this.parts = this.commonService.parts()
-        console.log('pdfTable:',this.pdfTable.nativeElement)
         this.commonService.pdfTable.set(this.pdfTable)
       })
     }

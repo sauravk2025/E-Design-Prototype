@@ -43,7 +43,7 @@ export class Common {
   externalSource:PlacedPart= {
         id:crypto.randomUUID(),
         type:'externalSource',
-        label:'externalSource',
+        label:'External Power Source',
         w: 100,
         h: 130,
         railIndex:1,
