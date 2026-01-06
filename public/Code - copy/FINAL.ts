@@ -52,6 +52,23 @@ interface Connection {
 interface Pt { x: number; y: number; }
 interface Rect { x: number; y: number; w: number; h: number; }
 
+/* 
+
+       "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kB",
+                  "maximumError": "1MB"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "4kB",
+                  "maximumError": "8kB"
+                }
+              ],
+
+
+*/
 @Component({
   selector: 'app-panel-designer',
   standalone: true,
