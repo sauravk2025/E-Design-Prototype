@@ -29,7 +29,7 @@ export class Common {
   RAIL_WIDTH= RAIL_WIDTH;
   RAIL_SPACING=RAIL_SPACING;
   newArrayofConnections = signal<{ fromPartId: string, fromPartConnector: string, toPartId: string, toPartConnector: string, connectionId: string }[] | []>([])
-  
+  tagList = signal<string[]>([])
   isDeleted = signal<boolean>(false)
   deletePartId = signal<string>('')
   deletePartMouseEvent:MouseEvent|undefined = undefined;
@@ -44,19 +44,20 @@ export class Common {
         id:crypto.randomUUID(),
         type:'externalSource',
         label:'External Power Source',
-        w: 100,
-        h: 130,
+        w: 80,
+        h: 100,
         railIndex:1,
         x: 70,
         y: 300,
-        imagePath: 'assets/externalSource5.png',
+        imagePath: 'assets/externalSource6.png',
         volt: '',
         price: 100,
         disabled: false,
         phase:3,
         phasePositionTop:'',
         phasePositionBottom:'',
-        isFixed:true
+        isFixed:true,
+        tagName:'a'
 
       };
 

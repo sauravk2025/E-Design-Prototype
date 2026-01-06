@@ -39,7 +39,8 @@ export interface PlacedPart {
   phase : number
   phasePositionTop:string;
   phasePositionBottom:string;
-  isFixed:boolean
+  isFixed:boolean;
+  tagName:string
 }
 
 export interface ConnectorRef {

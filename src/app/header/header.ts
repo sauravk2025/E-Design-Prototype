@@ -1,14 +1,15 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, input } from '@angular/core';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { PDFDocument } from 'pdf-lib';
 // optional helper:
 import { saveAs } from 'file-saver';
 import { Common } from '../shared/common';
+import { RouterLink } from "@angular/router";
 
 @Component({
   selector: 'app-header',
-  imports: [],
+  imports: [RouterLink],
   templateUrl: './header.html',
   styleUrl: './header.scss',
 })
@@ -17,6 +18,7 @@ export class Header {
 
   private commonService = inject(Common);
   startDownload = this.commonService.startDownload
+  buttonText = input<string>()
 
   // async exportAsPdf() {
   //   const panelEl = this.commonService.panelEl();

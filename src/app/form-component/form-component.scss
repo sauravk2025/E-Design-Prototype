@@ -1,0 +1,51 @@
+
+.outer-container{
+    height: calc(100vh - 80px);
+    overflow-y: auto;
+    
+}
+.form-input{
+    width: 350px;
+}
+mat-form-field{
+    margin-left: 30px;
+}
+
+h2{
+     color: rgb(61, 61, 61);
+}
+.form-heading {
+    text-align: center;
+}
+.tavledata{
+    margin-top: 10px;
+}
+.tavledata,.specification-schema{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    height: 100px;
+    gap:30px;
+
+    form{
+        display: flex;
+        align-items: flex-start;
+
+    }
+}
+
+hr{
+    margin-top: 30px;
+    margin-bottom: 30px;
+    border: 1px solid rgb(223, 221, 221);
+}
+
+.single-form{
+    // display: flex;
+    // flex-direction: column;
+    // justify-content: center;
+    // gap: 30px;
+     display: flex;
+        align-items: flex-start;
+        gap: 20px;
+}

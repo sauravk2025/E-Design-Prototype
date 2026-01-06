@@ -25,6 +25,9 @@ export class ComponentLibrary {
   parts = this.commonService.parts
   totalProductPrice = this.commonService.totalProductPrice
   railsTop = this.commonService.railsTop
+  tagList = this.commonService.tagList
+
+  tag:string|null = ''
 
   
 //  getRailLeft(): number {
@@ -43,6 +46,7 @@ export class ComponentLibrary {
       if (this.commonService.collides({ x: snappedX, y, w: pt.w, h: pt.h }, railIndex, null)) return;
   
       const id = crypto.randomUUID(); //id for the part
+      const l = this.tagList().length;
       const part: PlacedPart = {
         id,
         type: pt.type,
@@ -59,7 +63,8 @@ export class ComponentLibrary {
         phase:pt.phase,
         phasePositionTop:'',
         phasePositionBottom:'',
-        isFixed:false
+        isFixed:false,
+        tagName:this.tagList()[l-1]
   
       };
       this.parts.update(list => [...list, part]); //list of placed part
@@ -73,6 +78,7 @@ export class ComponentLibrary {
       if (this.locked()) return;
   
       const panelRect = this.commonService.panelEl().getBoundingClientRect();
+      this.tagList().push('a')
       this.isDragging.set(true);
       this.hoverRailIndex.set(null);
       this.preview.set(null);
@@ -106,6 +112,8 @@ export class ComponentLibrary {
           const snappedX = Math.round(boundedX / this.GRID) * this.GRID;
           //snappedX = “the final X position of the part on this rail, aligned to the grid.”
           this.preview.set({ x: snappedX, w: pt.w, h: pt.h, railIndex: railIdx, images: pt.imagePath }); //This updates your preview ghost while dragging:
+     
+
         } else {
           this.hoverRailIndex.set(null);
           this.preview.set(null);
@@ -113,6 +121,7 @@ export class ComponentLibrary {
           // hoverRailIndex = null → no rail is highlighted.
           // preview = null → hide the ghost.
         }
+       
       };
   
       //After droppping in the rail
@@ -150,6 +159,7 @@ export class ComponentLibrary {
             const railLeft = this.commonService.getRailLeft();
             const localX = mx - panelRect.left - railLeft - pt.w / 2;
             this.placePart(pt, railIdx, localX);
+            
           }
         }
   
@@ -161,6 +171,19 @@ export class ComponentLibrary {
   
       document.addEventListener('mousemove', onMove);
       document.addEventListener('mouseup', onUp);
+      this.tag = prompt("Enter a tag name for this element (b-z)")
+      while(1){
+        if(this.tag && !this.tagList().includes(this.tag)){
+          this.tagList().push(this.tag)
+          console.log('tagList:',this.tagList())
+          break
+        }
+        else{
+          this.tag = prompt("Enter a valid and unused tag name for this element (b-z)")
+        }
+
+      }
+      
     }
   
 }
