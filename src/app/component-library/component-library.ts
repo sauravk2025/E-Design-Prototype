@@ -26,9 +26,9 @@ export class ComponentLibrary {
   totalProductPrice = this.commonService.totalProductPrice
   railsTop = this.commonService.railsTop
   tagList = this.commonService.tagList
-
+  alphabetAscii:number = 98;
   tag:string|null = ''
-
+  
   
 //  getRailLeft(): number {
 //     const el = this.commonService.panelEl();
@@ -46,7 +46,8 @@ export class ComponentLibrary {
       if (this.commonService.collides({ x: snappedX, y, w: pt.w, h: pt.h }, railIndex, null)) return;
   
       const id = crypto.randomUUID(); //id for the part
-      const l = this.tagList().length;
+      const l = String.fromCharCode(this.alphabetAscii);
+      this.alphabetAscii+=1
       const part: PlacedPart = {
         id,
         type: pt.type,
@@ -64,7 +65,7 @@ export class ComponentLibrary {
         phasePositionTop:'',
         phasePositionBottom:'',
         isFixed:false,
-        tagName:this.tagList()[l-1]
+        tagName:l
   
       };
       this.parts.update(list => [...list, part]); //list of placed part
@@ -171,18 +172,18 @@ export class ComponentLibrary {
   
       document.addEventListener('mousemove', onMove);
       document.addEventListener('mouseup', onUp);
-      this.tag = prompt("Enter a tag name for this element (b-z)")
-      while(1){
-        if(this.tag && !this.tagList().includes(this.tag)){
-          this.tagList().push(this.tag)
-          console.log('tagList:',this.tagList())
-          break
-        }
-        else{
-          this.tag = prompt("Enter a valid and unused tag name for this element (b-z)")
-        }
+      // this.tag = prompt("Enter a tag name for this element (b-z)")
+      // while(1){
+      //   if(this.tag && !this.tagList().includes(this.tag)){
+      //     this.tagList().push(this.tag)
+      //     console.log('tagList:',this.tagList())
+      //     break
+      //   }
+      //   else{
+      //     this.tag = prompt("Enter a valid and unused tag name for this element (b-z)")
+      //   }
 
-      }
+      // }
       
     }
   
