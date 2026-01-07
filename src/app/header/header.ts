@@ -9,7 +9,7 @@ import { RouterLink } from "@angular/router";
 
 @Component({
   selector: 'app-header',
-  imports: [RouterLink],
+  imports: [],
   templateUrl: './header.html',
   styleUrl: './header.scss',
 })
@@ -358,7 +358,7 @@ private async buildPanelPdfBytes(): Promise<ArrayBuffer> {
     const imgWidthPx = canvas.width;
     const imgHeightPx = canvas.height;
 
-    const ratio = Math.min(contentW / imgWidthPx, contentH / imgHeightPx) * 1.3;
+    const ratio = Math.min(contentW / imgWidthPx, contentH / imgHeightPx) * 1.2;
     const imgWmm = imgWidthPx * ratio;
     const imgHmm = imgHeightPx * ratio;
 
@@ -427,8 +427,8 @@ private async buildOfferPdfBytes(): Promise<ArrayBuffer> {
     pdf.text('Drawout Engineering ApS', pageW - margin.right, headerY + 5, { align: 'right' });
     pdf.text(this.getFormattedDate(), pageW - margin.right, headerY + 10, { align: 'right' });
 
-    const footerY = pageH - margin.bottom;
-    pdf.setFontSize(9);
+    // const footerY = pageH - margin.bottom;
+    // pdf.setFontSize(9);
     //pdf.text(`Page ${i} of ${totalPages}`, pageW / 2, footerY - 6, { align: 'center' });
   }
 
@@ -452,42 +452,42 @@ private async toDataUrl(url: string): Promise<string | null> {
   }
 
 
-async downloadCombinedPdf() {
-  this.commonService.startDownload.set(true);
+// async downloadCombinedPdf() {
+//   this.commonService.startDownload.set(true);
 
-  try {
-    // generate both PDFs
-    const [panelBytes, offerBytes] = await Promise.all([
-      this.buildPanelPdfBytes(),
-      this.buildOfferPdfBytes(),
-    ]);
+//   try {
+//     // generate both PDFs
+//     const [panelBytes, offerBytes] = await Promise.all([
+//       this.buildPanelPdfBytes(),
+//       this.buildOfferPdfBytes(),
+//     ]);
 
-    // merge
-    const mergedPdf = await PDFDocument.create();
+//     // merge
+//     const mergedPdf = await PDFDocument.create();
 
-    const panelPdf = await PDFDocument.load(panelBytes);
-    const offerPdf = await PDFDocument.load(offerBytes);
+//     const panelPdf = await PDFDocument.load(panelBytes);
+//     const offerPdf = await PDFDocument.load(offerBytes);
 
-    const panelPages = await mergedPdf.copyPages(panelPdf, panelPdf.getPageIndices());
-    panelPages.forEach(p => mergedPdf.addPage(p));
+//     const panelPages = await mergedPdf.copyPages(panelPdf, panelPdf.getPageIndices());
+//     panelPages.forEach(p => mergedPdf.addPage(p));
 
-    const offerPages = await mergedPdf.copyPages(offerPdf, offerPdf.getPageIndices());
-    offerPages.forEach(p => mergedPdf.addPage(p));
+//     const offerPages = await mergedPdf.copyPages(offerPdf, offerPdf.getPageIndices());
+//     offerPages.forEach(p => mergedPdf.addPage(p));
 
-const mergedBytes = await mergedPdf.save(); // Uint8Array
+//     const mergedBytes = await mergedPdf.save(); // Uint8Array
 
-// ✅ Make a new Uint8Array (detaches from any SharedArrayBuffer typing)
-const bytes = new Uint8Array(mergedBytes);
+// // ✅ Make a new Uint8Array (detaches from any SharedArrayBuffer typing)
+//     const bytes = new Uint8Array(mergedBytes);
 
-const blob = new Blob([bytes], { type: 'application/pdf' });
-    
-    saveAs(blob, 'final-datasheet.pdf'); // or your filename
-  } catch (e) {
-    console.error(e);
-  } finally {
-    this.commonService.startDownload.set(false);
-  }
-}
+//     const blob = new Blob([bytes], { type: 'application/pdf' });
+        
+//         saveAs(blob, 'final-datasheet.pdf'); // or your filename
+//       } catch (e) {
+//         console.error(e);
+//       } finally {
+//         this.commonService.startDownload.set(false);
+//       }
+// }
 
 
 drawPageBorder(
@@ -507,6 +507,219 @@ drawPageBorder(
     pageH - margin.top - margin.bottom
   );
 }
+
+//specifikation skema
+private async buildSpecifikationsPdfBytes(): Promise<ArrayBuffer> {
+
+  const elRef = this.commonService.specifikationsskema?.(); // signal getter (based on your effect)
+  const el = elRef?.nativeElement as HTMLElement;
+
+  if (!el) throw new Error('specifikationsskema element not found');
+
+  await new Promise(requestAnimationFrame);
+  if ((document as any).fonts?.ready) await (document as any).fonts.ready;
+
+  const pdf = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
+
+  const pageW = pdf.internal.pageSize.getWidth();
+  const pageH = pdf.internal.pageSize.getHeight();
+
+  const margin = { top: 12, right: 12, bottom: 12, left: 12 };
+  const headerH = 24;
+  const footerH = 18;
+
+  const logoDataUrl = await this.toDataUrl('assets/drawout-logo.png');
+
+  const contentTop = margin.top + headerH;
+  const contentBottom = margin.bottom + footerH;
+
+  // IMPORTANT: force it to render at its full height (if it can scroll)
+  // const original = { height: el.style.height, overflow: el.style.overflow };
+  // el.style.height = el.scrollHeight + 'px';
+  // el.style.overflow = 'visible';
+
+  try {
+    await pdf.html(el, {
+      x: margin.left,
+      y: contentTop,
+      width: pageW - margin.left - margin.right,
+      windowWidth: el.scrollWidth,
+      //autoPaging: 'text',
+      // margin: [contentTop, margin.right, contentBottom, margin.left],
+      // html2canvas: {
+      //   scale: 1,
+      //   useCORS: true,
+      //   backgroundColor: '#ffffff',
+      // },
+    });
+
+    const totalPages = pdf.getNumberOfPages();
+
+    for (let i = 1; i <= totalPages; i++) {
+      pdf.setPage(i);
+
+      // border
+      this.drawPageBorder(pdf);
+
+      // header
+      const headerY = margin.top;
+
+      if (logoDataUrl) {
+        pdf.addImage(logoDataUrl, 'PNG', margin.left, headerY, 42, 10);
+      }
+
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(10);
+      pdf.text('Drawout Engineering ApS', pageW - margin.right, headerY + 5, { align: 'right' });
+      pdf.text(this.getFormattedDate(), pageW - margin.right, headerY + 10, { align: 'right' });
+
+      // footer (optional)
+      // const footerY = pageH - margin.bottom;
+      // pdf.setFontSize(9);
+      // pdf.text(`Page ${i} of ${totalPages}`, pageW / 2, footerY - 6, { align: 'center' });
+    }
+
+    return pdf.output('arraybuffer');
+  } finally {
+    // restore element styles
+  //   el.style.height = original.height;
+  //   el.style.overflow = original.overflow;
+  }
+}
+
+
+// tavledata
+private async buildTavleDataPdfBytes(): Promise<ArrayBuffer> {
+
+  const elRef = this.commonService.tavledata?.(); // signal getter (based on your effect)
+  const el = elRef?.nativeElement as HTMLElement;
+
+  if (!el) throw new Error('tavledata element not found');
+
+  await new Promise(requestAnimationFrame);
+  if ((document as any).fonts?.ready) await (document as any).fonts.ready;
+
+  const pdf = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
+
+  const pageW = pdf.internal.pageSize.getWidth();
+  const pageH = pdf.internal.pageSize.getHeight();
+
+  const margin = { top: 12, right: 12, bottom: 12, left: 12 };
+  const headerH = 24;
+  const footerH = 18;
+
+  const logoDataUrl = await this.toDataUrl('assets/drawout-logo.png');
+
+  const contentTop = margin.top + headerH;
+  const contentBottom = margin.bottom + footerH;
+
+  // IMPORTANT: force it to render at its full height (if it can scroll)
+  // const original = { height: el.style.height, overflow: el.style.overflow };
+  // el.style.height = el.scrollHeight + 'px';
+  // el.style.overflow = 'visible';
+
+  try {
+    await pdf.html(el, {
+     // x: margin.left,
+      y: contentTop,
+      width: pageW - margin.left - margin.right,
+      windowWidth: el.scrollWidth,
+      //autoPaging: 'text',
+      ///margin: [contentTop, margin.right, contentBottom, margin.left],
+      // html2canvas: {
+      //   scale: 1,
+      //   useCORS: true,
+      //   backgroundColor: '#ffffff',
+      // },
+    });
+
+    const totalPages = pdf.getNumberOfPages();
+
+    for (let i = 1; i <= totalPages; i++) {
+      pdf.setPage(i);
+
+      // border
+      this.drawPageBorder(pdf);
+
+      // header
+      const headerY = margin.top;
+
+      if (logoDataUrl) {
+        pdf.addImage(logoDataUrl, 'PNG', margin.left, headerY, 42, 10);
+      }
+
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(10);
+      pdf.text('Drawout Engineering ApS', pageW - margin.right, headerY + 5, { align: 'right' });
+      pdf.text(this.getFormattedDate(), pageW - margin.right, headerY + 10, { align: 'right' });
+
+      // footer (optional)
+      // const footerY = pageH - margin.bottom;
+      // pdf.setFontSize(9);
+      // pdf.text(`Page ${i} of ${totalPages}`, pageW / 2, footerY - 6, { align: 'center' });
+    }
+
+    return pdf.output('arraybuffer');
+  } finally {
+    // restore element styles
+  //   el.style.height = original.height;
+  //   el.style.overflow = original.overflow;
+  }
+}
+
+
+
+
+
+
+
+
+// //merging pdf new
+async downloadCombinedPdf() {
+  this.commonService.startDownload.set(true);
+
+  try {
+    // generate all PDFs
+    const [panelBytes, specBytes, offerBytes,tavleBytes] = await Promise.all([
+      this.buildPanelPdfBytes(),
+      this.buildSpecifikationsPdfBytes(),
+      this.buildOfferPdfBytes(),
+      this.buildTavleDataPdfBytes()
+    ]);
+
+    // merge
+    const mergedPdf = await PDFDocument.create();
+
+    const panelPdf = await PDFDocument.load(panelBytes);
+    const specPdf = await PDFDocument.load(specBytes);
+    const offerPdf = await PDFDocument.load(offerBytes);
+     const tavlePdf = await PDFDocument.load(tavleBytes);
+     
+     const tavlePages = await mergedPdf.copyPages(tavlePdf, tavlePdf.getPageIndices());
+     tavlePages.forEach(p => mergedPdf.addPage(p));
+
+    const panelPages = await mergedPdf.copyPages(panelPdf, panelPdf.getPageIndices());
+    panelPages.forEach(p => mergedPdf.addPage(p));
+
+    const specPages = await mergedPdf.copyPages(specPdf, specPdf.getPageIndices());
+    specPages.forEach(p => mergedPdf.addPage(p));
+
+    const offerPages = await mergedPdf.copyPages(offerPdf, offerPdf.getPageIndices());
+    offerPages.forEach(p => mergedPdf.addPage(p));
+
+
+    const mergedBytes = await mergedPdf.save();
+    const bytes = new Uint8Array(mergedBytes);
+    const blob = new Blob([bytes], { type: 'application/pdf' });
+
+    saveAs(blob, 'final-datasheet.pdf');
+  } catch (e) {
+    console.error(e);
+  } finally {
+    this.commonService.startDownload.set(false);
+  }
+}
+
 
 
 }

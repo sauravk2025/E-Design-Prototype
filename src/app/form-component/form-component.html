@@ -1,21 +1,21 @@
-<app-header buttonText="Design"></app-header>
+<app-header buttonText="Design" (click)="formSubmit()"></app-header>
 <div class="outer-container">
     <div class="tavledata">
         <h2 class="form-heading">TAVLEDATA</h2>
         <form>
             <mat-form-field appearance="outline" class="form-input">
                 <mat-label>Projeckt*</mat-label>
-                <input matInput placeholder="">
+                <input matInput placeholder=""  [(ngModel)]="projectName_pages" name="projectName_pages">
             </mat-form-field>
 
             <mat-form-field appearance="outline" class="form-input">
                 <mat-label>Ing.*</mat-label>
-                <input matInput placeholder="?" value="?">
+                <input matInput placeholder="?" value="" [(ngModel)]="ing_pages" name="ing_pages">
             </mat-form-field>
 
             <mat-form-field appearance="outline" class="form-input">
                 <mat-label>Producktionsdato (Maned / Ar)* </mat-label>
-                <input matInput placeholder="">
+                <input matInput type="number"   placeholder="" [(ngModel)]="Producktionsdato_page1" name="Producktionsdato_page1">
             </mat-form-field>
 
 
@@ -28,7 +28,7 @@
 
         <mat-form-field appearance="outline" class="form-input">
             <mat-label>Bemaerkninger</mat-label>
-            <input matInput placeholder="">
+            <input matInput placeholder="" [(ngModel)]="Bemaerkninger_page1" name="Bemaerkninger_page1">
         </mat-form-field>
     </div>
 
@@ -39,24 +39,25 @@
         <form>
             <mat-form-field appearance="outline" class="form-input">
                 <mat-label>Pronr.*</mat-label>
-                <input matInput placeholder="" value="?">
+                <input matInput placeholder="" value="" [(ngModel)]="Pronr_pages" name="Pronr_pages">
             </mat-form-field>
           
             <mat-form-field appearance="outline" class="form-input">
                 <mat-label>Antal*</mat-label>
-                <input matInput placeholder="" value="stk.">
+                <input matInput placeholder="" value="" [(ngModel)]="Antal_page2" name="Antal_page2">
             </mat-form-field>
 
             <mat-form-field appearance="outline" class="form-input">
                 <mat-label>Planlagt afsendelse*</mat-label>
-                <input matInput placeholder="" value="Uge XX D X">
+                <input matInput placeholder="" value="" [(ngModel)]="Planlagt_page2" name="Planlagt_page2">
             </mat-form-field>
             
             <mat-form-field appearance="outline" class="form-input">
                 <mat-label>Medlever sikr. material*</mat-label>
-                <mat-select>
-                    <mat-option value="one">First option</mat-option>
-                    <mat-option value="two">Second option</mat-option>
+                <mat-select [(ngModel)]="Medlever_page2" name="Medlever_page2">
+                    @for(item of Medlever_Options; track $index){
+                        <mat-option [value]="item">{{item}}</mat-option>
+                    }
                 </mat-select>
             </mat-form-field>
           
@@ -72,32 +73,34 @@
             <mat-form-field appearance="outline" class="form-input">
                 <mat-label>Tavlefabrikat*</mat-label>
                 <mat-select>
-                    <mat-option value="one">First option</mat-option>
-                    <mat-option value="two">Second option</mat-option>
+                    <mat-option value="UG Hvid - LK/Schneider Electric">UG Hvid - LK/Schneider Electric</mat-option>
+                    <mat-option value="Resi9 - Schneider Electric">Resi9 - Schneider Electric</mat-option>
+                    <mat-option value="GD-Hager">GD-Hager</mat-option>
                 </mat-select>
             </mat-form-field>
             
             <mat-form-field appearance="outline" class="form-input">
                 <mat-label>Hovedkomponentfabrikat*</mat-label>
                 <mat-select>
-                    <mat-option value="one">Schneider</mat-option>
-                    <mat-option value="two">Second option</mat-option>
+                    <mat-option value="Schneider">Schneider</mat-option>
                 </mat-select>
             </mat-form-field>
 
             <mat-form-field appearance="outline" class="form-input">
                 <mat-label>Label (Maerkestrom)*</mat-label>
-                <mat-select>
-                    <mat-option value="one">Schneider</mat-option>
-                    <mat-option value="two">Second option</mat-option>
+                <mat-select [(ngModel)]="label_page1" name="label_page1">
+                    @for(item of label_Options; track $index){
+                        <mat-option [value]="item">{{item}}</mat-option>
+                    }
                 </mat-select>
             </mat-form-field>
 
             <mat-form-field appearance="outline" class="form-input">
                 <mat-label>Lage.*</mat-label>
-                <mat-select>
-                    <mat-option value="one">Schneider</mat-option>
-                    <mat-option value="two">Second option</mat-option>
+               <mat-select [(ngModel)]="lage_page2" name="lage_page2">
+                    @for(item of lage_Options; track $index){
+                        <mat-option [value]="item">{{item}}</mat-option>
+                    }
                 </mat-select>
             </mat-form-field>
 
@@ -110,17 +113,18 @@
         <form>
             <mat-form-field appearance="outline" class="form-input">
                 <mat-label>Dokumentation.*</mat-label>
-                <mat-select>
-                    <mat-option value="one">Schneider</mat-option>
-                    <mat-option value="two">Second option</mat-option>
+                <mat-select [(ngModel)]="Dokumentation_page2" name="Dokumentation_page2">
+                    @for(item of Dokumentation_Options; track $index){
+                        <mat-option [value]="item">{{item}}</mat-option>
+                    }
                 </mat-select>
             </mat-form-field>
         </form>
     </div>
 
-    <hr>
+    <!-- <hr> -->
 
-    <div class="single-form">
+    <!-- <div class="single-form">
         <form>
             <mat-form-field appearance="outline" class="form-input">
                 <mat-label>Antal DIN-skinne.*</mat-label>
@@ -131,8 +135,8 @@
             </mat-form-field>
 
         </form>
-    </div>
+    </div> -->
 
-    <hr>
+    <!-- <hr> -->
 </div>
 

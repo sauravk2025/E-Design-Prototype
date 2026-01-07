@@ -1,5 +1,5 @@
 import { computed, effect, Injectable, signal } from '@angular/core';
-import { Connection, ConnectorRef, PlacedPart, Port, Pt } from './interfaces';
+import { Connection, ConnectorRef, PlacedPart, Port, Pt, SpecifikationComponent, TavleDataComponent } from './interfaces';
 import { RAIL_WIDTH, RAIL_SPACING} from './constants';
 @Injectable({
   providedIn: 'root',
@@ -39,6 +39,16 @@ export class Common {
   lastIndex =signal<number>(0);
 
   pdfTable = signal<any>('');
+  tavledata = signal<any>('')
+  specifikationsskema = signal<any>('')
+
+  tavleDataContents = signal<TavleDataComponent|null>(null)
+  specfikationContents = signal<SpecifikationComponent|null>(null)
+
+
+  get hi(){
+    return this.tavleDataContents
+  }
 
   externalSource:PlacedPart= {
         id:crypto.randomUUID(),

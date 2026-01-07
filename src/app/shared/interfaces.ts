@@ -57,3 +57,27 @@ export interface Connection {
   manualPoints?: Pt[];    // The stored polyline in panel coordinates by user
 }
 
+export interface TavleDataComponent {
+
+  projectName : string;
+  ing:string;
+  Pronr:string;
+  Producktionsdato:number;
+  Bemaerkninger:string;
+  label:string;
+
+}
+
+
+export interface SpecifikationComponent {
+  projectName : string;
+  ing:string;
+  Pronr:string;
+  Antal:string;
+  Planlagt:string;
+  Medlever:string;
+  lage:string;
+  Dokumentation:string
+
+
+}

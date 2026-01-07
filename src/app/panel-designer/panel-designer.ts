@@ -9,7 +9,7 @@ import {
   inject,
 } from '@angular/core';
 
-import { PlacedPart, Port, ConnectorRef, Connection, Pt, Rect } from '../shared/interfaces';
+import { PlacedPart, Port, ConnectorRef, Connection, Pt, Rect, PartType } from '../shared/interfaces';
 import { CommonModule } from '@angular/common';
 import { Common } from '../shared/common';
 import { Header } from '../header/header';
@@ -35,11 +35,13 @@ import { PanelControls } from '../panel-controls/panel-controls';
 import { MatDialog } from '@angular/material/dialog';
 import { PhaseDialogue } from '../phase-dialogue/phase-dialogue';
 import { PdfTable } from '../pdf/pdf-table/pdf-table';
+import { Specifikationsskema } from '../pdf/specifikationsskema/specifikationsskema';
+import { Tavledata } from "../pdf/tavledata/tavledata";
 
 @Component({
   selector: 'app-panel-designer',
   standalone: true,
-  imports: [CommonModule, Header, ComponentLibrary, PanelControls, PdfTable],
+  imports: [CommonModule, Header, ComponentLibrary, PanelControls, PdfTable, Specifikationsskema, Tavledata],
   templateUrl: './panel-designer.html',
   styleUrls: ['./panel-designer.scss'],
 })
@@ -108,6 +110,8 @@ export class PanelDesignerComponent implements AfterViewInit {
   part1Phase: number = 0;
   part2Phase: number = 0;
   lastIndex: number = 0;
+
+  draggedPart:PlacedPart|null = null
 
   constructor() {}
 
@@ -287,7 +291,6 @@ export class PanelDesignerComponent implements AfterViewInit {
       this.commonService.panelEl.set(panelEl);
     });
 
-
     // When railsCount changes, drop parts on removed rails and prune wires/pending.
     //afterViewInit runs only once
 
@@ -370,13 +373,19 @@ export class PanelDesignerComponent implements AfterViewInit {
   onPartMouseDown(e: MouseEvent, partId: string, isFixed: boolean) {
     if (this.locked() || isFixed) return;
     e.stopPropagation();
-
+    this.draggedPart = null
     const parts = this.parts();
     const idx = parts.findIndex((p) => p.id === partId); //finding current rail index of the part which is getting dragged
     const image = parts.find((p) => p.id == partId)?.imagePath;
     if (idx < 0) return;
 
     const startPart = parts[idx]; //the element which is dragged
+    const wires = this.connections().filter((p)=>p.from.partId == startPart.id || p.to.partId == startPart.id)
+
+    if(wires) wires.forEach((wire)=>{
+      this.onSelectConnection(wire!) 
+    })
+
     const startX = e.clientX; //x coordinate
 
     this.isDragging.set(true);
@@ -425,8 +434,6 @@ export class PanelDesignerComponent implements AfterViewInit {
         railIndex: railIdx,
         images: image ?? '',
       });
-
-    
     };
 
     //after dropping the element same as above
@@ -452,14 +459,10 @@ export class PanelDesignerComponent implements AfterViewInit {
       this.draggingPartId.set(null);
       this.hoverRailIndex.set(null);
       this.preview.set(null);
-
-      
     };
 
     document.addEventListener('mousemove', onMove);
     document.addEventListener('mouseup', onUp);
-
-    
   }
 
   // =============== Connectors & connections =================================
@@ -692,9 +695,9 @@ export class PanelDesignerComponent implements AfterViewInit {
   }
 
   //When a user clicks a wire, this function converts it from auto-routed to manual (by saving the current path as editable points), highlights it as the selected wire, and prepares it for dragging/editing.
-  onSelectConnection(conn: Connection, ev: MouseEvent) {
-    console.log('hi')
-    ev.stopPropagation();
+  onSelectConnection(conn: Connection, ev?: MouseEvent) {
+    console.log('hi');
+    ev?.stopPropagation();
     //conn returns connection lines
     //conn.manual is set to true when we click
     // If not manual, lock in the current auto-routed path as template

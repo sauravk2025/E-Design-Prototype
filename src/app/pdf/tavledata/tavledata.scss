@@ -1,11 +1,13 @@
     .container {
             font-family: Arial, sans-serif;
-            font-size: 11px;
+            font-size: 15px;
             color: #000;
             line-height: 1.2;
             border: 2px solid #000;
-            padding: 0;
-            margin: auto;
+            // padding: 0;
+            // margin: auto;
+            width: 100% !important;
+            height: auto;
         }
         .header-grid {
             display: grid;
@@ -31,35 +33,45 @@
         .left-col {
             border-right: 2px solid #000;
         }
-        h1 { font-size: 18px; margin: 0; text-transform: uppercase; }
-        h2 { font-size: 11px; margin: 10px 0 2px 0; text-decoration: underline; font-weight: bold; }
+        h1 { font-size: 22px; margin: 0; text-transform: uppercase; }
+        h2 { font-size: 15px; margin: 10px 0 2px 0; text-decoration: underline; font-weight: bold; }
         
         .row {
             display: flex;
             justify-content: space-between;
             margin-bottom: 2px;
         }
+        .single-item{
+          text-align: start;
+        }
         .label { flex: 1; }
         .symbol { width: 50px; color: #0000FF; }
+        .new-symbol {width: 200px; text-align: center;}
         .value { width: 200px; text-align: right; color: #0000FF; font-weight: bold; }
+        .new-value{
+            width: 300px;text-align: right;
+        }
 
         /* Footer Styles */
         .footer {
             display: grid;
             grid-template-columns: 300px 1fr 1fr;
             border-top: 2px solid #000;
-            height: 60px;
+            // height: auto;
+            color: green;
+   
         }
         .logo-box {
             padding: 5px;
             border-right: 1px solid #000;
         }
-        .logo-text { font-weight: bold; font-size: 16px; font-style: italic; color: #e30613; }
+        .logo-text { font-weight: bold; font-size: 20px; font-style: italic; color: #e30613; }
         .footer-cell {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1fr 1fr ;
             border-right: 1px solid #000;
-            font-size: 9px;
+            font-size: 13px;
+          
         }
         .footer-item { border: 0.5px solid #000; padding: 2px; }
-        .blue-val { color: #0000FF; text-align: right; }
+        // .blue-val { color: #0000FF; text-align: right; }

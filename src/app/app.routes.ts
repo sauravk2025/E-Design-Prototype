@@ -6,11 +6,11 @@ import { FormComponent } from './form-component/form-component';
 export const routes: Routes = [
 
     {
-        path:'form',
+        path:'',
         component:FormComponent
     },
     {
-        path:'',
+        path:'panel',
         component:PanelDesignerComponent
 
     }

@@ -6,7 +6,7 @@
 
   <div class="header-function">
     @if(buttonText() == 'Design'){
-        <button  [routerLink]="['/panel']">{{buttonText()}}</button>
+        <button >{{buttonText()}}</button>
     }
     @else{
       <button (click)="downloadCombinedPdf()">{{buttonText()}}</button>

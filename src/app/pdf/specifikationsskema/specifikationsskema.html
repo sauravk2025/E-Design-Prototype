@@ -1,0 +1,107 @@
+
+<div class="container" #specifikationsskema>
+    <div class="top-header">
+        <h1>SPECIFIKATIONSSKEMA</h1>
+        <p>(INTERNT DOKUMENT)</p>
+    </div>
+
+    <div class="meta-grid">
+        <div class="meta-item"><label>Pronr.:</label><span class="blue-text">{{specifikationData?.Pronr}}</span></div>
+        <div class="meta-item"><label>Tavle type:</label><span class="blue-text">Gruppetavle</span></div>
+        <div class="meta-item"><label>Antal:</label><span class="blue-text">{{specifikationData?.Antal}}</span></div>
+        <div class="meta-item"><label>Planlagt afsendelse:</label><span class="blue-text">{{specifikationData?.Planlagt}}</span></div>
+        <div class="meta-item"><label>Tekniker:</label><span class="blue-text">{{tavleData?.ing}}</span></div>
+    </div>
+
+    <div class="main-body">
+        <div class="left-pane">
+            <div class="section">
+                <h2>Tekniker:</h2>
+                <div class="checkbox-row">
+                    <strong>Egenkontrol OK</strong>
+                    <div class="box" style="margin-left:20px;"></div>
+                    <span>Initialer: <span class="blue-text">?</span></span>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>Samleværksted:</h2>
+                <div class="data-row"><span>Farve:</span><span class="blue-text">Hvid</span></div>
+                <div class="data-row"><span>Låge:</span><span class="blue-text">{{specifikationData?.lage}}</span></div>
+                <div class="data-row"><span>Transportdeling:</span><span class="blue-text">Ingen</span></div>
+                <div class="data-row"><span>IP klasse:</span><span class="blue-text">2XC</span></div>
+                <div class="checkbox-row">
+                    <strong>Egenkontrol OK</strong>
+                    <div class="box" style="margin-left:20px;"></div>
+                    <span>Initialer: ________</span>
+                </div>
+            </div>
+
+            <div class="section" style="min-height: 200px;">
+                <h2>Bemærkninger fra Tekniker:</h2>
+                <p class="blue-text">{{specifikationData?.Dokumentation}}</p>
+            </div>
+        </div>
+
+        <div class="right-pane">
+            <div class="section">
+                <h2>Montør:</h2>
+                <div class="data-row"><span>Special komponenter:</span><span class="blue-text">Nej</span></div>
+                <div class="data-row"><span>Interne ledningskanaler:</span><span class="blue-text">Standard</span></div>
+                <div class="data-row"><span>Ledningsfarver:</span><span class="blue-text">Standard</span></div>
+                <div class="data-row"><span>Ledningsmærkning type:</span><span class="blue-text">Standard (CAB3)</span></div>
+                <div class="data-row"><span>Terminalrør:</span><span class="blue-text">Ja</span></div>
+                <div class="data-row"><span>Tekstskilte udvendig:</span><span class="blue-text">Standard</span></div>
+                <div class="data-row"><span>Medlever sikr.materiel:</span><span class="blue-text">{{specifikationData?.Medlever}}</span></div>
+                
+                <div class="checkbox-row">
+                    <strong>Egenkontrol OK</strong>
+                    <div class="box" style="margin-left:20px;"></div>
+                    <span>Initialer: ________</span>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>Bemærkninger fra Montør:</h2>
+                <div style="height: 100px;"></div>
+            </div>
+
+            <div class="section">
+                <strong>Timeforbrug montør:</strong>
+                <table class="time-table">
+                    <tr>
+                        <th>Montør</th><th>Normal timer</th><th>Overtid</th>
+                        <th>Montør</th><th>Normal timer</th><th>Overtid</th>
+                    </tr>
+                    <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                    <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                    <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                    <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <div class="logo-area">
+            <!-- <div class="logo-main">PROAUTOMATIC</div>
+            <div style="font-size:8px; letter-spacing:1px;">FREMTIDENS ELTAVLER</div> -->
+            <div class="logo-main"></div>
+            <div style="font-size:8px; letter-spacing:1px;"></div>
+        </div>
+
+        <div class="info-grid">
+            <div class="info-cell">Kunde:</div><div class="info-cell"></div>
+            <div class="info-cell">Ing.: </div><div class="info-cell">{{tavleData?.ing}}</div>
+            <div class="info-cell">Sag:</div><div class="info-cell"></div>
+            <div class="info-cell">Projekt:</div><div class="info-cell">{{tavleData?.projectName}}</div>
+        </div>
+        <div class="info-grid">
+            <div class="info-cell">Tegning nr.:</div><div class="info-cell">pro Resi Copy</div>
+            <div class="info-cell">Sidetitel:</div><div class="info-cell">Tavledata</div>
+            <div class="info-cell">Dato:</div><div class="info-cell">{{tavleData?.Producktionsdato}}</div>
+           <div class="info-cell">Side:</div><div class="info-cell">SPEC</div>
+        </div>
+    </div>
+
+</div>
